@@ -1,13 +1,8 @@
 <script>
-    class Item {
-        constructor(name, length) {
-            this.name = name;
-            this.length = length;
-        }
-    }
+    
+    /* ========================= Variables ========================= */
 
-    const timeCurrentItem = $state(15);
-    const itemList = $state([
+    let itemList = $state([
         { name: "Task 1", length: 4 },
         { name: "Task 2", length: 4 },
         { name: "", length: 8 },
@@ -21,18 +16,22 @@
     let currentTime = $state(0);
     let totalTimePassed = $state(0);
     let timerActive = $state(false);
+    let timerBegan = $state(false);
 
-    function countTotalTimePassed() {
-        totalTimePassed = 0;
-        setInterval(() => {
-            if (timerActive) {
-                totalTimePassed = totalTimePassed + 1;
-            }
-        }, 1000);
+    /* ========================= Timer Functions ========================= */
+
+    function toggleTimer() {
+        timerActive = !timerActive;
+    }
+
+    function finishTimer() {
+        console.log("Finished!");
     }
 
     function startTimer() {
         timerActive = true;
+        timerBegan = true;
+        prepareList();
         countTotalTimePassed();
         currentTime = 0;
         setInterval(() => {
@@ -52,37 +51,50 @@
             }
         }, 1000);
     }
-    function toggleTimer() {
-        timerActive = !timerActive;
+
+    function countTotalTimePassed() {
+        totalTimePassed = 0;
+        setInterval(() => {
+            if (timerActive) {
+                totalTimePassed = totalTimePassed + 1;
+            }
+        }, 1000);
     }
 
-    function finishTimer() {
-        console.log("Finished!");
-    }
+    /* ========================= List Functions ========================= */
 
     function skipCurrentActiveItem() {
         currentActiveItem = currentActiveItem + 1;
     }
 
     function checkIfItemListFull() {
-        let itemListLength = itemList.length;
-        if (
-            itemList.length != 0 &&
-            itemList[itemListLength - 1].name != "" &&
-            itemList[itemListLength - 1].length
-        ) {
-            console.log("Item list full.");
-            createNewInputField();
+        if (timerBegan == false) {
+            let itemListLength = itemList.length;
+            if (
+                itemList.length != 0 &&
+                itemList[itemListLength - 1].name != "" &&
+                itemList[itemListLength - 1].length
+            ) {
+                console.log("Item list full.");
+                createNewInputField();
+            }
         }
+    }
+
+    $effect(() => {
+        checkIfItemListFull();
+    });
+
+    function prepareList() {
+        itemList = itemList.filter((item) => item.name !== "");
+        /* make array fields non adjustable*/
     }
 
     function createNewInputField() {
         itemList.push({ name: "", length: null });
     }
 
-    $effect(() => {
-        checkIfItemListFull();
-    });
+    
 </script>
 
 <main class="base-layout">
@@ -99,7 +111,9 @@
         <p>{currentTime}</p>
         <button onclick={startTimer}>Start Timer</button>
         <button onclick={skipCurrentActiveItem}>Skip Current Item</button>
-        <button onclick={toggleTimer}>Toggle Timer; Current: {timerActive}</button>
+        <button onclick={toggleTimer}
+            >Toggle Timer; Current: {timerActive}</button
+        >
         <p>{totalTime}</p>
     </div>
     <div>
