@@ -6,13 +6,16 @@
         }
     }
 
-    const totalTime = $state(15);
     const timeCurrentItem = $state(15);
     const itemList = $state([
         { name: "Task 1", length: 15 },
         { name: "Task 2", length: 17 },
         { name: "", length: 18 },
     ]);
+    const totalTime = $derived.by(() => 
+        itemList.reduce((sum, item) => sum + item.length, 0)
+    );
+    const currentActiveItem = $state(0);
 
     function checkIfItemListFull() {
         let itemListLength = itemList.length;
@@ -46,10 +49,10 @@
     <div>
         <h2>Current item active</h2>
         <p>{timeCurrentItem}</p>
+        <p>{totalTime}</p>
     </div>
     <div>
         <h2>Input area</h2>
-        <p>{itemList[2]}</p>
         {#each itemList as item}
             <input type="text" bind:value={item.name} />
             <input type="number" bind:value={item.length} />
