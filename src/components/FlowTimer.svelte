@@ -1,5 +1,5 @@
 <script>
-    class item {
+    class Item {
         constructor(name, length) {
             this.name = name;
             this.length = length;
@@ -8,7 +8,31 @@
 
     const totalTime = $state(15);
     const timeCurrentItem = $state(15);
-    const itemList = $state([15, 17, 18]);
+    const itemList = $state([
+        { name: "Task 1", length: 15 },
+        { name: "Task 2", length: 17 },
+        { name: "", length: 18 },
+    ]);
+
+    function checkIfItemListFull() {
+        let itemListLength = itemList.length;
+        if (
+            itemList.length != 0 &&
+            itemList[itemListLength - 1].name != "" &&
+            itemList[itemListLength - 1].length
+        ) {
+            console.log("Item list full.");
+            createNewInputField();
+        }
+    }
+
+    function createNewInputField() {
+        itemList.push({ name: "", length: null });
+    }
+
+    $effect(() => {
+        checkIfItemListFull();
+    });
 </script>
 
 <main class="base-layout">
@@ -26,6 +50,11 @@
     <div>
         <h2>Input area</h2>
         <p>{itemList[2]}</p>
+        {#each itemList as item}
+            <input type="text" bind:value={item.name} />
+            <input type="number" bind:value={item.length} />
+        {/each}
+        <button onclick={checkIfItemListFull}>Check if full</button>
     </div>
 </main>
 
