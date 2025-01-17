@@ -95,7 +95,13 @@
         itemList.push({ name: "", length: null });
     }
 
-    /* redo function: set currentTime to 0, if pressed when time is 0 go down one activeItem */
+    function redoCurrent() {
+        console.log(currentActiveItem);
+        if (currentTime == 0 && currentActiveItem > 0) {
+            currentActiveItem = currentActiveItem - 1;
+        }
+        currentTime = 0;
+    }
 </script>
 
 <main class="base-layout">
@@ -111,6 +117,9 @@
         <p class="current-time text-align-center">15:84</p>
         <p>{currentTime}</p>
         {#if timerBegan}
+        <button onclick={redoCurrent}>
+            <img src="/icons/Skip-Back-Icon.svg" alt="Skip-back Icon" width="24" height="24" />
+        </button>
         <button onclick={toggleTimer}>
             {#if timerActive}
                 <img src="/icons/Pause-Icon.svg" alt="Pause Icon" width="24" height="24" />
@@ -121,7 +130,7 @@
         <button onclick={goNextItem}>
             <img src="/icons/Skip-Icon.svg" alt="Pause Icon" width="24" height="24" />
         </button>
-        <p>{currentActiveItem + 1} / {itemList.length}</p>
+        <p class="text-align-center">{currentActiveItem + 1} / {itemList.length}</p>
         {:else}
             <button onclick={startTimer}>Start Timer</button>
         {/if}
