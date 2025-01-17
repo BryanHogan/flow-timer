@@ -10,39 +10,50 @@
     const itemList = $state([
         { name: "Task 1", length: 4 },
         { name: "Task 2", length: 4 },
-        { name: "", length: 18 },
+        { name: "", length: 8 },
     ]);
-    const totalTime = $derived.by(() => 
-        itemList.reduce((sum, item) => sum + item.length, 0)
+    const totalTime = $derived.by(() =>
+        itemList.reduce((sum, item) => sum + item.length, 0),
     );
     let currentActiveItem = $state(0);
     const currentActiveItemName = $derived(itemList[currentActiveItem].name);
 
     let currentTime = $state(0);
     let totalTimePassed = $state(0);
+    let timerActive = $state(false);
 
     function countTotalTimePassed() {
         totalTimePassed = 0;
         setInterval(() => {
-            totalTimePassed = totalTimePassed + 1;
+            if (timerActive) {
+                totalTimePassed = totalTimePassed + 1;
+            }
         }, 1000);
     }
 
     function startTimer() {
+        timerActive = true;
         countTotalTimePassed();
         currentTime = 0;
         setInterval(() => {
-            currentTime = currentTime + 1;
-            if (currentTime >= itemList[currentActiveItem].length) {
-                console.log("VICTORYYY");
-                if (currentActiveItem < itemList.length) {
-                currentActiveItem = currentActiveItem + 1;
-                currentTime = 0;
-                } else {
-                    finishTimer();
+            if (timerActive) {
+                currentTime = currentTime + 1;
+                if (currentTime >= itemList[currentActiveItem].length) {
+                    console.log("VICTORYYY");
+                    console.log(currentActiveItem);
+                    console.log(itemList.length);
+                    if (currentActiveItem < itemList.length - 1) {
+                        currentActiveItem = currentActiveItem + 1;
+                        currentTime = 0;
+                    } else {
+                        finishTimer();
+                    }
                 }
             }
         }, 1000);
+    }
+    function toggleTimer() {
+        timerActive = !timerActive;
     }
 
     function finishTimer() {
@@ -88,6 +99,7 @@
         <p>{currentTime}</p>
         <button onclick={startTimer}>Start Timer</button>
         <button onclick={skipCurrentActiveItem}>Skip Current Item</button>
+        <button onclick={toggleTimer}>Toggle Timer; Current: {timerActive}</button>
         <p>{totalTime}</p>
     </div>
     <div>
