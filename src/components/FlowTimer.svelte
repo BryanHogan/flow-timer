@@ -95,7 +95,7 @@
         itemList.push({ name: "", length: null });
     }
 
-    /* redo function: set currentTime to 0, if pressed when time is 0 go down one activeItem */ 
+    /* redo function: set currentTime to 0, if pressed when time is 0 go down one activeItem */
 </script>
 
 <main class="base-layout">
@@ -106,26 +106,106 @@
     <div>
         <h2>Options</h2>
     </div>
-    <div>
-        <h2>{currentActiveItemName}</h2>
-        <p>Total time passed: {totalTimePassed}</p>
+    <div class="controls-container">
+        <h2 class="text-align-center">{currentActiveItemName}</h2>
+        <p class="current-time text-align-center">15:84</p>
         <p>{currentTime}</p>
-        <button onclick={startTimer}>Start Timer</button>
-        <button onclick={goNextItem}>Skip Current Item</button>
-        <button onclick={toggleTimer}
-            >Toggle Timer; Current: {timerActive}</button
-        >
+        {#if timerBegan}
+        <button onclick={toggleTimer}>
+            {#if timerActive}
+                <img src="/icons/Pause-Icon.svg" alt="Pause Icon" width="24" height="24" />
+            {:else}
+               <img src="/icons/Play-Icon.svg" alt="Unpause Icon" width="24" height="24" />
+            {/if}
+        </button>
+        <button onclick={goNextItem}>
+            <img src="/icons/Skip-Icon.svg" alt="Pause Icon" width="24" height="24" />
+        </button>
+        <p>{currentActiveItem + 1} / {itemList.length}</p>
+        {:else}
+            <button onclick={startTimer}>Start Timer</button>
+        {/if}
         <p>{totalTime}</p>
     </div>
-    <div>
+    <div class="margin-inline-auto" style="width: 100%">
         <h2>Input area</h2>
-        {#each itemList as item}
-            <input type="text" bind:value={item.name} />
-            <input type="number" bind:value={item.length} />
-        {/each}
+        <div class="input-container" role="list">
+            <div class="input-description">
+                <p class="name">Name</p>
+                <p class="length">Length</p>
+            </div>
+            <ul role="list">
+                {#each itemList as item}
+                    <li class="item-input-row">
+                        <input
+                            type="text"
+                            bind:value={item.name}
+                            class="name-input"
+                        />
+                        <input
+                            type="number"
+                            bind:value={item.length}
+                            class="length-input"
+                        />
+                    </li>
+                {/each}
+            </ul>
+        </div>
         <button onclick={checkIfItemListFull}>Check if full</button>
     </div>
+    <p>Total time passed: {totalTimePassed}</p>
 </main>
 
 <style>
+    .controls-container {
+        background-color: var(--color-neutral-800);
+        border-radius: var(--border-radius-m);
+        padding: var(--space-m) var(--space-s);
+        & h2 {
+            font-size: var(--text-size-3xl);
+            font-weight: var(--font-weight-normal);
+        }
+        & .current-time {
+            font-size: var(--text-size-5xl);
+            font-weight: var(--font-weight-bold);
+        }
+    }
+
+    .input-container {
+        max-width: 8050px;
+        & ul {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: var(--space-l);
+        }
+        & .item-input-row {
+            display: flex;
+            width: 100%;
+            flex-direction: row;
+            justify-content: center;
+            gap: var(--space-s);
+            & .name-input {
+                width: 60%;
+                max-width: 22rem;
+            }
+            & .length-input {
+                width: 20%;
+                max-width: 6rem;
+            }
+        }
+        & .input-description {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            & .name {
+                width: 60%;
+                max-width: calc(22rem + var(--space-s));
+            }
+            & .length {
+                width: 20%;
+                max-width: 6rem;
+            }
+        }
+    }
 </style>
