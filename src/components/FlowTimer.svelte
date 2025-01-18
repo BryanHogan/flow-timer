@@ -131,7 +131,7 @@
     <section class="section visually-hidden">
         <h2 class="simpler-h2 text-align-center">Options</h2>
     </section>
-    <div class="controls-container">
+    <section class="controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {currentActiveItemName}
         </h2>
@@ -175,6 +175,7 @@
             <p class="text-align-center" style="margin-top: var(--space-m);">
                 {currentActiveItem + 1} / {itemList.length}
             </p>
+            <progress min="0" max={itemList[currentActiveItem].length} value={currentTime} style="width: 100%;">{currentTime} / {itemList[currentActiveItem].length}</progress>
         {:else}
             <div class="button-control-group">
                 <button
@@ -192,7 +193,7 @@
                 </button>
             </div>
         {/if}
-    </div>
+    </section>
     <div class="margin-inline-auto" style="width: 100%">
         <h2 class="simpler-h2 text-align-center">Input area</h2>
         <div class="input-container" role="list">
@@ -224,6 +225,26 @@
 </main>
 
 <style>
+    progress, progress::-webkit-progress-bar {
+        background-color: var(--color-accent-500); /* background */
+        background-image: linear-gradient(
+      140deg,
+      var(--color-accent-500),
+      var(--color-accent-600)
+    );
+        accent-color: var(--color-neutral-800); /* moving bar, needed? */
+        border: 0;
+        border-radius: 5px;
+        height: 3px;
+    }
+    progress::-moz-progress-bar {
+        background-color: var(--color-neutral-800); /* moving bar */
+    }
+
+    progress::-webkit-progress-value {
+        background-color: var(--color-neutral-800); /* moving bar */
+    }
+
     .section {
         margin-top: var(--space-l);
         margin-bottom: var(--space-l);
@@ -254,11 +275,14 @@
             padding-bottom: var(--space-2xs);
         }
     }
-
     .controls-container {
         background-color: var(--color-neutral-800);
         border-radius: var(--border-radius-m);
         padding: var(--space-m) var(--space-s);
+        max-width: 80%;
+        width: 100%;
+        margin-inline: auto;
+        transition: all 1.2s ease;
         & h2 {
             font-size: var(--text-size-3xl);
             font-weight: var(--font-weight-normal);
