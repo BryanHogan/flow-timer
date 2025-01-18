@@ -106,38 +106,86 @@
 
 <main class="base-layout">
     <h1 class="text-align-center">Flow Timer</h1>
-    <div>
-        <h2>How to use (((description)))</h2>
-    </div>
-    <div>
-        <h2>Options</h2>
-    </div>
+    <section class="margin-inline-auto description-container section">
+        <h2 class="simpler-h2 text-align-center">
+            How to use<span class="visually-hidden"> flow timer</span>
+        </h2>
+        <div>
+            <ol style="padding-left: 0; list-style-position: inside;">
+                <li>Add items to the list. Include name and length.</li>
+                <li>Press play to start flow timer.</li>
+            </ol>
+            <p>Learn about the benefits of time-boxing.</p>
+        </div>
+    </section>
+    <section class="section visually-hidden">
+        <h2 class="simpler-h2 text-align-center">Options</h2>
+    </section>
     <div class="controls-container">
-        <h2 class="text-align-center">{currentActiveItemName}</h2>
+        <h2 class="text-align-center" style="margin-top: var(--space-m);">
+            {currentActiveItemName}
+        </h2>
         <p class="current-time text-align-center">15:84</p>
         <p>{currentTime}</p>
         {#if timerBegan}
-        <button onclick={redoCurrent}>
-            <img src="/icons/Skip-Back-Icon.svg" alt="Skip-back Icon" width="24" height="24" />
-        </button>
-        <button onclick={toggleTimer}>
-            {#if timerActive}
-                <img src="/icons/Pause-Icon.svg" alt="Pause Icon" width="24" height="24" />
-            {:else}
-               <img src="/icons/Play-Icon.svg" alt="Unpause Icon" width="24" height="24" />
-            {/if}
-        </button>
-        <button onclick={goNextItem}>
-            <img src="/icons/Skip-Icon.svg" alt="Pause Icon" width="24" height="24" />
-        </button>
-        <p class="text-align-center">{currentActiveItem + 1} / {itemList.length}</p>
+            <div class="button-control-group">
+                <button onclick={redoCurrent}>
+                    <img
+                        src="/icons/Skip-Back-Icon.svg"
+                        alt="Skip-back Icon"
+                        width="24"
+                        height="24"
+                    />
+                </button>
+                <button onclick={toggleTimer}>
+                    {#if timerActive}
+                        <img
+                            src="/icons/Pause-Icon.svg"
+                            alt="Pause Icon"
+                            width="24"
+                            height="24"
+                        />
+                    {:else}
+                        <img
+                            src="/icons/Play-Icon.svg"
+                            alt="Unpause Icon"
+                            width="24"
+                            height="24"
+                        />
+                    {/if}
+                </button>
+                <button onclick={goNextItem}>
+                    <img
+                        src="/icons/Skip-Icon.svg"
+                        alt="Pause Icon"
+                        width="24"
+                        height="24"
+                    />
+                </button>
+            </div>
+            <p class="text-align-center" style="margin-top: var(--space-m);">
+                {currentActiveItem + 1} / {itemList.length}
+            </p>
         {:else}
-            <button onclick={startTimer}>Start Timer</button>
+            <div class="button-control-group">
+                <button
+                    onclick={startTimer}
+                    class="margin-inline-auto flex-center flex-column"
+                    style="background-color: var(--color-neutral-700); gap: var(--space-xs);"
+                >
+                    <img
+                        src="/icons/Play-Icon.svg"
+                        alt="Unpause Icon"
+                        width="24"
+                        height="24"
+                    />
+                    <p>Start Timer</p>
+                </button>
+            </div>
         {/if}
-        <p>{totalTime}</p>
     </div>
     <div class="margin-inline-auto" style="width: 100%">
-        <h2>Input area</h2>
+        <h2 class="simpler-h2 text-align-center">Input area</h2>
         <div class="input-container" role="list">
             <div class="input-description">
                 <p class="name">Name</p>
@@ -163,9 +211,41 @@
         <button onclick={checkIfItemListFull}>Check if full</button>
     </div>
     <p>Total time passed: {totalTimePassed}</p>
+    <p>{totalTime}</p>
 </main>
 
 <style>
+    .section {
+        margin-top: var(--space-l);
+        margin-bottom: var(--space-l);
+    }
+    .simpler-h2 {
+        font-size: var(--text-size-xl);
+        font-weight: var(--font-weight-normal);
+        color: var(--color-neutral-300);
+        margin-bottom: var(--space-s);
+    }
+    button {
+        background-color: transparent;
+        padding: var(--space-xs);
+        border: 0;
+        border-radius: var(--border-radius-s);
+        transition: background-color var(--transition-normal);
+        &:hover {
+            background-color: var(--color-accent-800);
+            cursor: pointer;
+        }
+    }
+    .description-container {
+        border: 1px solid var(--color-neutral-700);
+        border-radius: var(--border-radius-m);
+        padding: var(--space-m) var(--space-s);
+        max-width: fit-content;
+        & div ol {
+            padding-bottom: var(--space-2xs);
+        }
+    }
+
     .controls-container {
         background-color: var(--color-neutral-800);
         border-radius: var(--border-radius-m);
@@ -178,10 +258,18 @@
             font-size: var(--text-size-5xl);
             font-weight: var(--font-weight-bold);
         }
+        & .button-control-group {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-m);
+        }
     }
 
     .input-container {
-        max-width: 8050px;
+        max-width: 1250px;
+        margin-inline: auto;
         & ul {
             display: flex;
             flex-direction: column;
@@ -194,6 +282,15 @@
             flex-direction: row;
             justify-content: center;
             gap: var(--space-s);
+            & input {
+                background-color: var(--color-accent-800);
+                border: 1px solid transparent;
+                padding: 0.25rem;
+                border-radius: 2px;
+                &:focus {
+                    background-color: var(--color-accent-700);
+                }
+            }
             & .name-input {
                 width: 60%;
                 max-width: 22rem;
@@ -202,6 +299,7 @@
                 width: 20%;
                 max-width: 6rem;
             }
+
         }
         & .input-description {
             display: flex;
