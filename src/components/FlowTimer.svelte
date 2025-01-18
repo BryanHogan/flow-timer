@@ -16,6 +16,11 @@
     let totalTimePassed = $state(0);
     let timerActive = $state(false);
     let timerBegan = $state(false);
+    let remainingTime = $derived(itemList[currentActiveItem].length - currentTime);
+
+    let clockHours = $derived(Math.floor(remainingTime / 3600));
+    let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
+    let clockSeconds = $derived(remainingTime % 60);
 
     /* ========================= Timer Functions ========================= */
 
@@ -105,7 +110,7 @@
 </script>
 
 <main class="base-layout">
-    <h1 class="text-align-center">Flow Timer</h1>
+    <h1 class="text-align-center">Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span></h1>
     <section class="margin-inline-auto description-container section">
         <h2 class="simpler-h2 text-align-center">
             How to use<span class="visually-hidden"> flow timer</span>
@@ -125,8 +130,7 @@
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {currentActiveItemName}
         </h2>
-        <p class="current-time text-align-center">15:84</p>
-        <p>{currentTime}</p>
+        <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockHours}:{clockMinutes}:{clockSeconds}</p>
         {#if timerBegan}
             <div class="button-control-group">
                 <button onclick={redoCurrent}>
