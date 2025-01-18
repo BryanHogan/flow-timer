@@ -453,6 +453,9 @@
         & div ol {
             padding-bottom: var(--space-2xs);
         }
+        & img {
+            transition: transform var(--transition-normal);
+        }
     }
     .options-container ul {
         display: flex;
