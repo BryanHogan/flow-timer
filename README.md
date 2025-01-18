@@ -7,3 +7,6 @@ Missing functionality:
 - Save preferences for what is collapsed and what isn't
   - Some way to hide "how to use" area?
 - add github repo link
+- options
+- notification
+- header things

@@ -303,6 +303,7 @@
         box-shadow: 0px 0px 2px 1px var(--color-accent-600);
         background-color: var(--color-accent-800);
     }
+
     .description-container {
         border: 1px solid var(--color-neutral-700);
         border-radius: var(--border-radius-m);
@@ -388,6 +389,9 @@
     @media only screen and (max-width: 700px) {
         .controls-container {
             max-width: 100%;
+        }
+        main > section:last-of-type {
+            padding-bottom: var(--space-xl);
         }
     }
 </style>
