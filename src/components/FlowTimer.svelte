@@ -422,7 +422,7 @@
     }
 
     main > section:last-of-type {
-        padding-bottom: var(--space-l);
+        padding-bottom: var(--space-xl);
     }
     button {
         background-color: transparent;
@@ -548,9 +548,6 @@
     @media only screen and (max-width: 700px) {
         .controls-container {
             max-width: 100%;
-        }
-        main > section:last-of-type {
-            padding-bottom: var(--space-xl);
         }
     }
 </style>

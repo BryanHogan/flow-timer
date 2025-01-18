@@ -7,7 +7,7 @@ import svelte from '@astrojs/svelte';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://timer.bryanhogan.com',
   trailingSlash: 'never',
   integrations: [sitemap(), svelte()],
 
