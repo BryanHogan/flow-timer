@@ -322,7 +322,6 @@
             {/if}
         </p>
         <progress
-            min="0"
             max={itemList[currentActiveItem].length * 60}
             value={currentTime}
             style="width: 100%;"
@@ -363,7 +362,7 @@
             </ul>
         </div>
     </section>
-    <section class="section flex-center" style="gap: var(--space-m);">
+    <div class="section flex-center" style="gap: var(--space-m);">
         <button onclick={resetTimer}>
             <img
                 src="/icons/Reset-Timer-Icon.svg"
@@ -380,7 +379,7 @@
                 height="24"
             />
         </button>
-    </section>
+    </div>
 </main>
 
 <style>
