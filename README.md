@@ -11,3 +11,4 @@ Missing functionality:
 - notification
 - header things
   - logo & social preview
+- when play is pressed after completion restart timer (use timer restart function)

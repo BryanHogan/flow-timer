@@ -20,6 +20,9 @@
     let timerActive = $state(false);
     let timerBegan = $state(false);
     let remainingTime = $derived(Math.max(0, itemList[currentActiveItem].length - currentTime));
+
+    let playNotification = $state(false);
+    let playSound = $state("none");
     
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
@@ -145,19 +148,26 @@
 
     function askNotificationPermission() {
         if (!("Notification" in window)) {
-            console.log("This browser does not support notifications.");
             return;
         }
         Notification.requestPermission();
     }
 
     function sendNotification() {
-        let pluckSound = new Audio("/sounds/notification-pluck.mp3");
-        pluckSound.play();
-        const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
-        new Notification("Flow Timer", {
-            body: text
-        })
+        if (playSound == "pluck") {
+            let pluckSound = new Audio("/sounds/notification-pluck.mp3");
+            pluckSound.play();
+        }
+        if (playSound == "clang") {
+            let clangSound = new Audio("/sounds/notification-clang.mp3");
+            clangSound.play();
+        }
+        if (playNotification) {
+            const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
+            new Notification("Flow Timer", {
+                body: text
+            })
+        }
     }
 </script>
 
@@ -175,8 +185,19 @@
             <p>Learn about the benefits of time-boxing.</p>
         </div>
     </section>
-    <section class="section visually-hidden">
+    <section class="section">
         <h2 class="simpler-h2 text-align-center">Options</h2>
+        <label>Sound: 
+            <select bind:value={playSound}>
+                <option value="none">None</option>
+                <option value="pluck">Pluck</option>
+                <option value="clang">Clang</option>
+            </select>
+        </label>
+        <label>
+            Send Notification
+            <input type="checkbox" bind:checked={playNotification} />
+        </label>
     </section>
     <section class="controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
