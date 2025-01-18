@@ -6,6 +6,9 @@
         { name: "Task 2", length: 4 },
         { name: "", length: 8 },
     ]);
+    let intervalID;
+    let intervalIDTotal;
+
     const totalTime = $derived.by(() =>
         itemList.reduce((sum, item) => sum + item.length, 0),
     );
@@ -17,6 +20,7 @@
     let timerActive = $state(false);
     let timerBegan = $state(false);
     let remainingTime = $derived(itemList[currentActiveItem].length - currentTime);
+    
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
@@ -30,7 +34,12 @@
     /* ========================= Timer Functions ========================= */
 
     function toggleTimer() {
-        timerActive = !timerActive;
+        if (timerBegan == false) {
+            startTimer();
+        }
+        else {
+            timerActive = !timerActive;
+        }
     }
 
     function finishTimer() {
@@ -43,7 +52,10 @@
         prepareList();
         countTotalTimePassed();
         currentTime = 0;
-        setInterval(() => {
+        if (intervalID) {
+            clearInterval(intervalID);
+        }
+        intervalID = setInterval(() => {
             if (timerActive && timerBegan) {
                 currentTime = currentTime + 1;
                 if (currentTime > itemList[currentActiveItem].length) {
@@ -55,7 +67,10 @@
 
     function countTotalTimePassed() {
         totalTimePassed = 0;
-        setInterval(() => {
+        if (intervalIDTotal) {
+            clearInterval(intervalIDTotal);
+        }
+        intervalIDTotal = setInterval(() => {
             if (timerActive && timerBegan) {
                 totalTimePassed = totalTimePassed + 1;
             }
@@ -72,6 +87,14 @@
         } else {
             finishTimer();
         }
+    }
+
+    function resetTimer() {
+        timerBegan = false;
+        currentTime = 0;
+        currentActiveItem = 0;
+        totalTimePassed = 0;
+        timerActive = false;
     }
 
     /* ========================= List Functions ========================= */
@@ -112,6 +135,11 @@
         }
         currentTime = 0;
     }
+
+    function resetAll() {
+        resetTimer();
+        itemList = [{ name: "Task 1", length: 10 }];
+    }
 </script>
 
 <main class="base-layout">
@@ -136,7 +164,6 @@
             {currentActiveItemName}
         </h2>
         <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockFace}</p>
-        {#if timerBegan}
             <div class="button-control-group">
                 <button onclick={redoCurrent}>
                     <img
@@ -146,7 +173,7 @@
                         height="24"
                     />
                 </button>
-                <button onclick={toggleTimer}>
+                <button onclick={toggleTimer} class={timerBegan ? "" : "glow"}>
                     {#if timerActive}
                         <img
                             src="/icons/Pause-Icon.svg"
@@ -157,7 +184,7 @@
                     {:else}
                         <img
                             src="/icons/Play-Icon.svg"
-                            alt="Unpause Icon"
+                            alt="Play Icon"
                             width="24"
                             height="24"
                         />
@@ -166,33 +193,20 @@
                 <button onclick={goNextItem}>
                     <img
                         src="/icons/Skip-Icon.svg"
-                        alt="Pause Icon"
+                        alt="Skip Icon"
                         width="24"
                         height="24"
                     />
                 </button>
             </div>
             <p class="text-align-center" style="margin-top: var(--space-m);">
-                {currentActiveItem + 1} / {itemList.length}
+                {#if timerBegan}
+                   {currentActiveItem + 1} / {itemList.length}
+                {:else}
+                    Click play to start timer.
+                {/if}
             </p>
             <progress min="0" max={itemList[currentActiveItem].length} value={currentTime} style="width: 100%;">{currentTime} / {itemList[currentActiveItem].length}</progress>
-        {:else}
-            <div class="button-control-group">
-                <button
-                    onclick={startTimer}
-                    class="margin-inline-auto flex-center flex-column"
-                    style="background-color: var(--color-neutral-700); gap: var(--space-xs);"
-                >
-                    <img
-                        src="/icons/Play-Icon.svg"
-                        alt="Unpause Icon"
-                        width="24"
-                        height="24"
-                    />
-                    <p>Start Timer</p>
-                </button>
-            </div>
-        {/if}
     </section>
     <section class="margin-inline-auto section" style="width: 100%">
         <h2 class="simpler-h2 text-align-center visually-hidden">Input area</h2>
@@ -208,16 +222,36 @@
                             type="text"
                             bind:value={item.name}
                             class="name-input"
+                            disabled={timerBegan}
                         />
                         <input
                             type="number"
                             bind:value={item.length}
                             class="length-input"
+                            disabled={timerBegan}
                         />
                     </li>
                 {/each}
             </ul>
         </div>
+    </section>
+    <section class="section flex-center" style="gap: var(--space-m);">
+        <button onclick={resetTimer}>
+            <img
+                src="/icons/Reset-Timer-Icon.svg"
+                alt="Reset timer icon"
+                width="24"
+                height="24"
+            />
+        </button>
+        <button onclick={resetAll}>
+            <img
+                src="/icons/Reset-All-Icon.svg"
+                alt="Reset all icon"
+                width="24"
+                height="24"
+            />
+        </button>
     </section>
 </main>
 
@@ -262,9 +296,13 @@
         border-radius: var(--border-radius-s);
         transition: background-color var(--transition-normal);
         &:hover {
-            background-color: var(--color-accent-800);
+            background-color: var(--color-accent-700);
             cursor: pointer;
         }
+    }
+    .glow {
+        box-shadow: 0px 0px 2px 1px var(--color-accent-600);
+        background-color: var(--color-accent-800);
     }
     .description-container {
         border: 1px solid var(--color-neutral-700);
