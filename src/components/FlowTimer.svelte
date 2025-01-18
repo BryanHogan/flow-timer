@@ -194,12 +194,12 @@
             </div>
         {/if}
     </section>
-    <div class="margin-inline-auto" style="width: 100%">
-        <h2 class="simpler-h2 text-align-center">Input area</h2>
+    <section class="margin-inline-auto section" style="width: 100%">
+        <h2 class="simpler-h2 text-align-center visually-hidden">Input area</h2>
         <div class="input-container" role="list">
-            <div class="input-description">
+            <div class="input-description" style="padding-bottom: var(--space-s);">
                 <p class="name">Name</p>
-                <p class="length">Length</p>
+                <p class="length">Length (min)</p>
             </div>
             <ul role="list">
                 {#each itemList as item}
@@ -218,10 +218,7 @@
                 {/each}
             </ul>
         </div>
-        <button onclick={checkIfItemListFull}>Check if full</button>
-    </div>
-    <p>Total time passed: {totalTimePassed}</p>
-    <p>{totalTime}</p>
+    </section>
 </main>
 
 <style>
@@ -310,14 +307,14 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: var(--space-l);
+            gap: var(--space-m);
         }
         & .item-input-row {
             display: flex;
             width: 100%;
             flex-direction: row;
             justify-content: center;
-            gap: var(--space-s);
+            gap: var(--space-xs);
             & input {
                 background-color: var(--color-accent-800);
                 border: 1px solid transparent;
