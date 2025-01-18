@@ -1,9 +1,9 @@
 <script>
     /* ========================= Variables ========================= */
     let itemList = $state([
-        { name: "Task 1", length: 4 },
-        { name: "Task 2", length: 4 },
-        { name: "", length: 8 },
+        { name: "Task 1", length: 5 },
+        { name: "Task 2", length: 5 },
+        { name: "", length: 10 },
     ]);
     let intervalID;
     let intervalIDTotal;
