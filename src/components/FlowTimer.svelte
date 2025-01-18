@@ -19,19 +19,26 @@
     let totalTimePassed = $state(0);
     let timerActive = $state(false);
     let timerBegan = $state(false);
-    let remainingTime = $derived(Math.max(0, itemList[currentActiveItem].length - currentTime));
+    let remainingTime = $derived(
+        Math.max(0, itemList[currentActiveItem].length - currentTime),
+    );
 
     let playNotification = $state(false);
     let playSound = $state("none");
-    
+
+    let showOptions = $state(true);
+    let showHowToUse = $state(true);
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
     let clockSeconds = $derived(remainingTime % 60);
     let clockFace = $derived(
         (clockHours > 0 ? clockHours + ":" : "") +
-        (clockMinutes < 10 ? "0" : "") + clockMinutes + ":" +
-        (clockSeconds < 10 ? "0" : "") + clockSeconds
+            (clockMinutes < 10 ? "0" : "") +
+            clockMinutes +
+            ":" +
+            (clockSeconds < 10 ? "0" : "") +
+            clockSeconds,
     );
 
     /* ========================= Timer Functions ========================= */
@@ -39,15 +46,14 @@
     function toggleTimer() {
         if (timerBegan == false) {
             startTimer();
-        }
-        else {
+        } else {
             timerActive = !timerActive;
         }
     }
 
     function finishTimer() {
         timerActive = false;
-        statusMessage = "Complete!"
+        statusMessage = "Complete!";
         timerBegan = false;
     }
 
@@ -101,7 +107,7 @@
         currentActiveItem = 0;
         totalTimePassed = 0;
         timerActive = false;
-        statusMessage = "Ready?"
+        statusMessage = "Ready?";
     }
 
     /* ========================= List Functions ========================= */
@@ -158,7 +164,7 @@
 
     function sendNotification() {
         playSoundNotification();
-        if (playNotification && ("Notification" in window)) {
+        if (playNotification && "Notification" in window) {
             if (Notification.permission === "granted") {
                 const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
                 try {
@@ -166,9 +172,8 @@
                 } catch (error) {
                     console.error("Error showing notification:", error);
                 }
-            }
-            else {
-               console.warn("Notification permission not granted or denied.");
+            } else {
+                console.warn("Notification permission not granted or denied.");
             }
         }
     }
@@ -187,100 +192,150 @@
         Notification.requestPermission();
         const text = `Test notification. You rock 🎸!`;
         new Notification("Flow Timer", {
-            body: text
-        })
+            body: text,
+        });
     }
 </script>
 
 <main class="base-layout">
-    <h1 class="text-align-center">Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span></h1>
+    <h1 class="text-align-center">
+        Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span>
+    </h1>
     <section class="margin-inline-auto description-container section">
-        <h2 class="simpler-h2 text-align-center">
-            How to use<span class="visually-hidden"> flow timer</span>
-        </h2>
-        <div>
-            <ol style="padding-left: 0; list-style-position: inside;">
-                <li>Add items to the list. Include name and length.</li>
-                <li>Press play to start flow timer.</li>
-            </ol>
-            <p>Learn about the benefits of time-boxing.</p>
+        <div class="flex-center flex-row h2-row-container">
+            <h2 class="simpler-h2 text-align-center">
+                How to use<span class="visually-hidden"> flow timer</span>
+            </h2>
+            <button onclick={() => (showHowToUse = !showHowToUse)}>
+                <img
+                    src="/icons/Chevron-Up-Icon.svg"
+                    alt="Chevron Up Icon"
+                    width="24"
+                    height="24"
+                    class={showHowToUse ? "chevron-down" : "chevron-right"}
+                />
+            </button>
         </div>
+        {#if showHowToUse}
+            <div class="margin-inline-auto" style="width: fit-content;">
+                <ol style="padding-left: 0; list-style-position: inside;">
+                    <li>Add items to the list. Include name and length.</li>
+                    <li>Press play to start flow timer.</li>
+                </ol>
+                <p>Learn about the benefits of time-boxing.</p>
+            </div>
+        {/if}
     </section>
     <section class="section options-container margin-inline-auto">
-        <h2 class="simpler-h2 text-align-center">Options</h2>
-        <ul role="list">
-            <li>
-                <label>Sound: 
-                    <select bind:value={playSound}>
-                        <option value="none">None</option>
-                        <option value="pluck">Pluck</option>
-                        <option value="clang">Clang</option>
-                    </select>
-                </label>
-                <button onclick={playSoundNotification}><small>Test sound</small></button>
-            </li>
-            <li>
-                <label>
-                    Send Notification
-                    <input type="checkbox" bind:checked={playNotification} />
-                </label>
-                <button onclick={testNotification}><small>Test notification</small></button>
-            </li>
-    </ul>
+        <div class="flex-center flex-row h2-row-container">
+            <h2 class="simpler-h2 text-align-center">Options</h2>
+            <button onclick={() => (showOptions = !showOptions)}>
+                <img
+                    src="/icons/Chevron-Up-Icon.svg"
+                    alt="Chevron Up Icon"
+                    width="24"
+                    height="24"
+                    class={showOptions ? "chevron-down" : "chevron-right"}
+                />
+            </button>
+        </div>
+        {#if showOptions}
+            <ul role="list">
+                <li>
+                    <label
+                        >Sound:
+                        <select bind:value={playSound}>
+                            <option value="none">None</option>
+                            <option value="pluck">Pluck</option>
+                            <option value="clang">Clang</option>
+                        </select>
+                    </label>
+                    <button onclick={playSoundNotification}
+                        ><small>Test sound</small></button
+                    >
+                </li>
+                <li>
+                    <label>
+                        Send Notification
+                        <input
+                            type="checkbox"
+                            bind:checked={playNotification}
+                        />
+                    </label>
+                    <button onclick={testNotification}
+                        ><small>Test notification</small></button
+                    >
+                </li>
+            </ul>
+        {/if}
     </section>
     <section class="section controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {statusMessage}
         </h2>
-        <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockFace}</p>
-            <div class="button-control-group">
-                <button onclick={redoCurrent}>
+        <p
+            class="current-time text-align-center"
+            style="padding-bottom: var(--space-m);"
+        >
+            {clockFace}
+        </p>
+        <div class="button-control-group">
+            <button onclick={redoCurrent}>
+                <img
+                    src="/icons/Skip-Back-Icon.svg"
+                    alt="Skip-back Icon"
+                    width="24"
+                    height="24"
+                />
+            </button>
+            <button onclick={toggleTimer} class={timerBegan ? "" : "glow"}>
+                {#if timerActive}
                     <img
-                        src="/icons/Skip-Back-Icon.svg"
-                        alt="Skip-back Icon"
+                        src="/icons/Pause-Icon.svg"
+                        alt="Pause Icon"
                         width="24"
                         height="24"
                     />
-                </button>
-                <button onclick={toggleTimer} class={timerBegan ? "" : "glow"}>
-                    {#if timerActive}
-                        <img
-                            src="/icons/Pause-Icon.svg"
-                            alt="Pause Icon"
-                            width="24"
-                            height="24"
-                        />
-                    {:else}
-                        <img
-                            src="/icons/Play-Icon.svg"
-                            alt="Play Icon"
-                            width="24"
-                            height="24"
-                        />
-                    {/if}
-                </button>
-                <button onclick={goNextItem}>
-                    <img
-                        src="/icons/Skip-Icon.svg"
-                        alt="Skip Icon"
-                        width="24"
-                        height="24"
-                    />
-                </button>
-            </div>
-            <p class="text-align-center" style="margin-top: var(--space-m);">
-                {#if timerBegan}
-                   {currentActiveItem + 1} / {itemList.length}
                 {:else}
-                    Click play to start timer.
+                    <img
+                        src="/icons/Play-Icon.svg"
+                        alt="Play Icon"
+                        width="24"
+                        height="24"
+                    />
                 {/if}
-            </p>
-            <progress min="0" max={itemList[currentActiveItem].length} value={currentTime} style="width: 100%;">{currentTime} / {itemList[currentActiveItem].length}</progress>
+            </button>
+            <button onclick={goNextItem}>
+                <img
+                    src="/icons/Skip-Icon.svg"
+                    alt="Skip Icon"
+                    width="24"
+                    height="24"
+                />
+            </button>
+        </div>
+        <p class="text-align-center" style="margin-top: var(--space-m);">
+            {#if timerBegan}
+                {currentActiveItem + 1} / {itemList.length}
+            {:else}
+                Click play to start timer.
+            {/if}
+        </p>
+        <progress
+            min="0"
+            max={itemList[currentActiveItem].length}
+            value={currentTime}
+            style="width: 100%;"
+            >{currentTime} / {itemList[currentActiveItem].length}</progress
+        >
     </section>
     <section class="margin-inline-auto section" style="width: 100%">
         <h2 class="simpler-h2 text-align-center visually-hidden">Input area</h2>
         <div class="input-container" role="list">
-            <div class="input-description" style="padding-bottom: var(--space-s);">
+            <div
+                class="input-description"
+                style="padding-bottom: var(--space-s);"
+            >
                 <p class="name">Name</p>
                 <p class="length">Length (min)</p>
             </div>
@@ -325,7 +380,8 @@
 </main>
 
 <style>
-    progress, progress::-webkit-progress-bar {
+    progress,
+    progress::-webkit-progress-bar {
         background-color: var(--color-accent-500); /* background */
         background-image: linear-gradient(
             140deg,
@@ -355,11 +411,16 @@
         font-size: var(--text-size-xl);
         font-weight: var(--font-weight-normal);
         color: var(--color-neutral-300);
-        margin-bottom: var(--space-s);
     }
+    .h2-row-container {
+        align-items: center;
+        margin-bottom: var(--space-s);
+        gap: var(--space-xs);
+    }
+
     main > section:last-of-type {
-            padding-bottom: var(--space-l);
-        }
+        padding-bottom: var(--space-l);
+    }
     button {
         background-color: transparent;
         padding: var(--space-xs);
@@ -375,12 +436,20 @@
         box-shadow: 0px 0px 2px 1px var(--color-accent-600);
         background-color: var(--color-accent-800);
     }
+    .chevron-down {
+        transform: rotate(180deg);
+    }
+    .chevron-right {
+        transform: rotate(90deg);
+    }
 
-    .description-container, .options-container {
+    .description-container,
+    .options-container {
         border: 1px solid var(--color-neutral-700);
         border-radius: var(--border-radius-m);
         padding: var(--space-m) var(--space-s);
-        max-width: fit-content;
+        max-width: 450px;
+        width: 100%;
         & div ol {
             padding-bottom: var(--space-2xs);
         }
@@ -388,6 +457,7 @@
     .options-container ul {
         display: flex;
         flex-direction: column;
+        gap: var(--space-2xs);
         & li {
             display: flex;
             flex-direction: row;
@@ -454,7 +524,6 @@
                 width: 20%;
                 max-width: 6rem;
             }
-
         }
         & .input-description {
             display: flex;
