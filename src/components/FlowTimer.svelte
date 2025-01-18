@@ -48,6 +48,7 @@
     function finishTimer() {
         timerActive = false;
         statusMessage = "Complete!"
+        timerBegan = false;
     }
 
     function startTimer() {
@@ -100,6 +101,7 @@
         currentActiveItem = 0;
         totalTimePassed = 0;
         timerActive = false;
+        statusMessage = "Ready?"
     }
 
     /* ========================= List Functions ========================= */
@@ -135,6 +137,7 @@
     function redoCurrent() {
         if (currentTime == 0 && currentActiveItem > 0) {
             currentActiveItem = currentActiveItem - 1;
+            statusMessage = itemList[currentActiveItem].name;
         }
         currentTime = 0;
     }
@@ -154,6 +157,22 @@
     }
 
     function sendNotification() {
+        playSoundNotification();
+        if (playNotification && ("Notification" in window)) {
+            if (Notification.permission === "granted") {
+                const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
+                try {
+                    new Notification("Flow Timer", { body: text });
+                } catch (error) {
+                    console.error("Error showing notification:", error);
+                }
+            }
+            else {
+               console.warn("Notification permission not granted or denied.");
+            }
+        }
+    }
+    function playSoundNotification() {
         if (playSound == "pluck") {
             let pluckSound = new Audio("/sounds/notification-pluck.mp3");
             pluckSound.play();
@@ -162,12 +181,14 @@
             let clangSound = new Audio("/sounds/notification-clang.mp3");
             clangSound.play();
         }
-        if (playNotification) {
-            const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
-            new Notification("Flow Timer", {
-                body: text
-            })
-        }
+    }
+
+    function testNotification() {
+        Notification.requestPermission();
+        const text = `Test notification. You rock 🎸!`;
+        new Notification("Flow Timer", {
+            body: text
+        })
     }
 </script>
 
@@ -185,21 +206,29 @@
             <p>Learn about the benefits of time-boxing.</p>
         </div>
     </section>
-    <section class="section">
+    <section class="section options-container margin-inline-auto">
         <h2 class="simpler-h2 text-align-center">Options</h2>
-        <label>Sound: 
-            <select bind:value={playSound}>
-                <option value="none">None</option>
-                <option value="pluck">Pluck</option>
-                <option value="clang">Clang</option>
-            </select>
-        </label>
-        <label>
-            Send Notification
-            <input type="checkbox" bind:checked={playNotification} />
-        </label>
+        <ul role="list">
+            <li>
+                <label>Sound: 
+                    <select bind:value={playSound}>
+                        <option value="none">None</option>
+                        <option value="pluck">Pluck</option>
+                        <option value="clang">Clang</option>
+                    </select>
+                </label>
+                <button onclick={playSoundNotification}><small>Test sound</small></button>
+            </li>
+            <li>
+                <label>
+                    Send Notification
+                    <input type="checkbox" bind:checked={playNotification} />
+                </label>
+                <button onclick={testNotification}><small>Test notification</small></button>
+            </li>
+    </ul>
     </section>
-    <section class="controls-container">
+    <section class="section controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {statusMessage}
         </h2>
@@ -293,7 +322,6 @@
             />
         </button>
     </section>
-    <button onclick={sendNotification}>Send Notification</button>
 </main>
 
 <style>
@@ -322,7 +350,6 @@
 
     .section {
         margin-top: var(--space-l);
-        margin-bottom: var(--space-l);
     }
     .simpler-h2 {
         font-size: var(--text-size-xl);
@@ -346,7 +373,7 @@
         background-color: var(--color-accent-800);
     }
 
-    .description-container {
+    .description-container, .options-container {
         border: 1px solid var(--color-neutral-700);
         border-radius: var(--border-radius-m);
         padding: var(--space-m) var(--space-s);
@@ -355,6 +382,18 @@
             padding-bottom: var(--space-2xs);
         }
     }
+    .options-container ul {
+        display: flex;
+        flex-direction: column;
+        & li {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-s);
+        }
+    }
+
     .controls-container {
         background-color: var(--color-neutral-800);
         border-radius: var(--border-radius-m);
