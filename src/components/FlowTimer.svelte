@@ -12,24 +12,25 @@
     const totalTime = $derived.by(() =>
         itemList.reduce((sum, item) => sum + item.length, 0),
     );
+
+    let statusMessage = $state("Ready?");
     let currentActiveItem = $state(0);
-    const currentActiveItemName = $derived(itemList[currentActiveItem].name);
 
     let currentTime = $state(0);
     let totalTimePassed = $state(0);
     let timerActive = $state(false);
     let timerBegan = $state(false);
-    let remainingTime = $derived(itemList[currentActiveItem].length - currentTime);
+    let remainingTime = $derived(Math.max(0, itemList[currentActiveItem].length - currentTime));
     
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
     let clockSeconds = $derived(remainingTime % 60);
     let clockFace = $derived(
-    (clockHours > 0 ? clockHours + ":" : "") +
-    (clockMinutes < 10 ? "0" : "") + clockMinutes + ":" +
-    (clockSeconds < 10 ? "0" : "") + clockSeconds
-);
+        (clockHours > 0 ? clockHours + ":" : "") +
+        (clockMinutes < 10 ? "0" : "") + clockMinutes + ":" +
+        (clockSeconds < 10 ? "0" : "") + clockSeconds
+    );
 
     /* ========================= Timer Functions ========================= */
 
@@ -43,12 +44,14 @@
     }
 
     function finishTimer() {
-        console.log("Finished!");
+        timerActive = false;
+        statusMessage = "Complete!"
     }
 
     function startTimer() {
         timerActive = true;
         timerBegan = true;
+        statusMessage = itemList[currentActiveItem].name;
         prepareList();
         countTotalTimePassed();
         currentTime = 0;
@@ -78,11 +81,9 @@
     }
 
     function goNextItem() {
-        console.log("VICTORYYY");
-        console.log(currentActiveItem);
-        console.log(itemList.length);
         if (currentActiveItem < itemList.length - 1) {
             currentActiveItem = currentActiveItem + 1;
+            statusMessage = itemList[currentActiveItem].name;
             currentTime = 0;
         } else {
             finishTimer();
@@ -107,7 +108,6 @@
                 itemList[itemListLength - 1].name != "" &&
                 itemList[itemListLength - 1].length
             ) {
-                console.log("Item list full.");
                 createNewInputField();
             }
         }
@@ -129,7 +129,6 @@
     }
 
     function redoCurrent() {
-        console.log(currentActiveItem);
         if (currentTime == 0 && currentActiveItem > 0) {
             currentActiveItem = currentActiveItem - 1;
         }
@@ -161,7 +160,7 @@
     </section>
     <section class="controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
-            {currentActiveItemName}
+            {statusMessage}
         </h2>
         <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockFace}</p>
             <div class="button-control-group">
