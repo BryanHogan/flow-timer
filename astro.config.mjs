@@ -10,4 +10,8 @@ export default defineConfig({
   site: 'https://example.com',
   trailingSlash: 'never',
   integrations: [sitemap(), svelte()],
+
+  server: {
+    host: true
+  },
 });

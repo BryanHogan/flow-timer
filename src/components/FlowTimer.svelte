@@ -228,13 +228,13 @@
     progress, progress::-webkit-progress-bar {
         background-color: var(--color-accent-500); /* background */
         background-image: linear-gradient(
-      140deg,
-      var(--color-accent-500),
-      var(--color-accent-600)
-    );
+            140deg,
+            var(--color-accent-500),
+            var(--color-accent-300),
+            var(--color-accent-500)
+        );
         accent-color: var(--color-neutral-800); /* moving bar, needed? */
-        border: 0;
-        border-radius: 5px;
+        border: 1px solid var(--color-neutral-800);
         height: 3px;
     }
     progress::-moz-progress-bar {
@@ -242,6 +242,9 @@
     }
 
     progress::-webkit-progress-value {
+        border: 1px solid var(--color-neutral-800) !important;
+        border-left: none;
+        box-shadow: none;
         background-color: var(--color-neutral-800); /* moving bar */
     }
 
@@ -346,6 +349,11 @@
                 width: 20%;
                 max-width: 6rem;
             }
+        }
+    }
+    @media only screen and (max-width: 700px) {
+        .controls-container {
+            max-width: 100%;
         }
     }
 </style>
