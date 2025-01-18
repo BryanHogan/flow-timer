@@ -21,6 +21,11 @@
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
     let clockSeconds = $derived(remainingTime % 60);
+    let clockFace = $derived(
+    (clockHours > 0 ? clockHours + ":" : "") +
+    (clockMinutes < 10 ? "0" : "") + clockMinutes + ":" +
+    (clockSeconds < 10 ? "0" : "") + clockSeconds
+);
 
     /* ========================= Timer Functions ========================= */
 
@@ -130,7 +135,7 @@
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {currentActiveItemName}
         </h2>
-        <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockHours}:{clockMinutes}:{clockSeconds}</p>
+        <p class="current-time text-align-center" style="padding-bottom: var(--space-m);">{clockFace}</p>
         {#if timerBegan}
             <div class="button-control-group">
                 <button onclick={redoCurrent}>
