@@ -357,6 +357,9 @@
         color: var(--color-neutral-300);
         margin-bottom: var(--space-s);
     }
+    main > section:last-of-type {
+            padding-bottom: var(--space-l);
+        }
     button {
         background-color: transparent;
         padding: var(--space-xs);
