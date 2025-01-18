@@ -1,8 +1,3 @@
-# Notes
+# What is Flow Timer?
 
-Missing functionality:
-- Save preferences for what is collapsed and what isn't
-  - Some way to hide "how to use" area?
-- add github repo link
-- header things
-  - logo & social preview
+Flow Timer is a simple tool designed to help you focus and get things done. By breaking your time into clear, manageable blocks, it encourages productivity and keeps you on track. Finish your tasks and reach your goals with time-boxing. Whether you're studying, working, or tackling personal projects, Flow Timer helps you stay focused and finish tasks without feeling overwhelmed.
