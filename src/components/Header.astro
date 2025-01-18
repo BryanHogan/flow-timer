@@ -1,7 +1,5 @@
 ---
 import { Image } from "astro:assets";
-import Logo from "../assets/images/background.svg";
-import { Icons } from "./Icons";
 import Icon from "./Icon.astro";
 ---
 
@@ -10,7 +8,7 @@ import Icon from "./Icon.astro";
         <header>
             <a href="/"
                 ><Image
-                    src={Logo}
+                    src="/icons/Flow-Timer-Logo.svg"
                     alt="Logo icon"
                     height="25"
                     width="25"
@@ -56,12 +54,7 @@ import Icon from "./Icon.astro";
         width: 100%;
         position: fixed;
         z-index: 10;
-        background-color: var(--color-neutral-900);
-        background-color: color-mix(
-            in srgb,
-            var(--color-neutral-900) 95%,
-            transparent
-        );
+        
     }
     .header-container::before {
         content: "";
@@ -70,7 +63,6 @@ import Icon from "./Icon.astro";
         left: 0;
         right: 0;
         bottom: 0;
-        backdrop-filter: blur(5px);
         z-index: -1;
     }
 

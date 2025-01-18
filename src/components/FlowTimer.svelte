@@ -20,7 +20,7 @@
     let timerActive = $state(false);
     let timerBegan = $state(false);
     let remainingTime = $derived(
-        Math.max(0, itemList[currentActiveItem].length - currentTime),
+        Math.max(0, (itemList[currentActiveItem].length * 60) - currentTime),
     );
 
     let playNotification = $state(false);
@@ -71,7 +71,7 @@
         intervalID = setInterval(() => {
             if (timerActive && timerBegan) {
                 currentTime = currentTime + 1;
-                if (currentTime > itemList[currentActiveItem].length) {
+                if (currentTime > itemList[currentActiveItem].length * 60) {
                     goNextItem();
                 }
             }
@@ -133,7 +133,6 @@
         itemList = itemList.filter(
             (item) => item.name !== "" && item.length > 0,
         );
-        /* make array fields non adjustable*/
     }
 
     function createNewInputField() {
@@ -323,10 +322,10 @@
         </p>
         <progress
             min="0"
-            max={itemList[currentActiveItem].length}
+            max={itemList[currentActiveItem].length * 60}
             value={currentTime}
             style="width: 100%;"
-            >{currentTime} / {itemList[currentActiveItem].length}</progress
+            >{currentTime} / {itemList[currentActiveItem].length * 60}</progress
         >
     </section>
     <section class="margin-inline-auto section" style="width: 100%">
