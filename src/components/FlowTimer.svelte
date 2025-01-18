@@ -330,7 +330,7 @@
     </section>
     <section class="margin-inline-auto section" style="width: 100%">
         <h2 class="simpler-h2 text-align-center visually-hidden">Input area</h2>
-        <div class="input-container" role="list">
+        <div class="input-container">
             <div
                 class="input-description"
                 style="padding-bottom: var(--space-s);"
@@ -340,18 +340,22 @@
             </div>
             <ul role="list">
                 {#each itemList as item}
-                    <li class="item-input-row">
+                    <li class="item-input-row" role="listitem">
                         <input
                             type="text"
                             bind:value={item.name}
                             class="name-input"
                             disabled={timerBegan}
+                            aria-disabled={timerBegan}
+                            aria-label="Input field for item name"
                         />
                         <input
                             type="number"
                             bind:value={item.length}
                             class="length-input"
                             disabled={timerBegan}
+                            aria-disabled={timerBegan}
+                            aria-label="Input field for item length in minutes"
                         />
                     </li>
                 {/each}
