@@ -16,3 +16,4 @@ Missing functionality:
 - button functionality:
   - reset timer but keep items
   - reset all
+- add github repo link
