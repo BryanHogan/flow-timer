@@ -13,3 +13,6 @@ Missing functionality:
 - Save preferences for what is collapsed and what isn't
   - Some way to hide "how to use" area?
 - Change width highlighted area (80% width?)
+- button functionality:
+  - reset timer but keep items
+  - reset all
