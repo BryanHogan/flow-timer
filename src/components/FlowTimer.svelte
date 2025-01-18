@@ -61,6 +61,7 @@
         askNotificationPermission();
         timerActive = true;
         timerBegan = true;
+        currentActiveItem = 0;
         statusMessage = itemList[currentActiveItem].name;
         prepareList();
         countTotalTimePassed();
