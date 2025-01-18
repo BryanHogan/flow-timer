@@ -10,3 +10,4 @@ Missing functionality:
 - options
 - notification
 - header things
+  - logo & social preview

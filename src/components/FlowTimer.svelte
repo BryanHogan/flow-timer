@@ -1,6 +1,5 @@
 <script>
     /* ========================= Variables ========================= */
-
     let itemList = $state([
         { name: "Task 1", length: 4 },
         { name: "Task 2", length: 4 },
@@ -49,6 +48,7 @@
     }
 
     function startTimer() {
+        askNotificationPermission();
         timerActive = true;
         timerBegan = true;
         statusMessage = itemList[currentActiveItem].name;
@@ -81,6 +81,7 @@
     }
 
     function goNextItem() {
+        sendNotification();
         if (currentActiveItem < itemList.length - 1) {
             currentActiveItem = currentActiveItem + 1;
             statusMessage = itemList[currentActiveItem].name;
@@ -138,6 +139,25 @@
     function resetAll() {
         resetTimer();
         itemList = [{ name: "Task 1", length: 10 }];
+    }
+
+    /* ========================= Notifications ========================= */
+
+    function askNotificationPermission() {
+        if (!("Notification" in window)) {
+            console.log("This browser does not support notifications.");
+            return;
+        }
+        Notification.requestPermission();
+    }
+
+    function sendNotification() {
+        let pluckSound = new Audio("/sounds/notification-pluck.mp3");
+        pluckSound.play();
+        const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
+        new Notification("Flow Timer", {
+            body: text
+        })
     }
 </script>
 
@@ -252,6 +272,7 @@
             />
         </button>
     </section>
+    <button onclick={sendNotification}>Send Notification</button>
 </main>
 
 <style>
