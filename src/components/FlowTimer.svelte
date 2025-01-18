@@ -362,7 +362,7 @@
             </ul>
         </div>
     </section>
-    <div class="section flex-center" style="gap: var(--space-m);">
+    <div class="section flex-center" style="gap: var(--space-m); padding-bottom: var(--space-xl);">
         <button onclick={resetTimer}>
             <img
                 src="/icons/Reset-Timer-Icon.svg"
@@ -421,9 +421,6 @@
         gap: var(--space-xs);
     }
 
-    main > section:last-of-type {
-        padding-bottom: var(--space-xl);
-    }
     button {
         background-color: transparent;
         padding: var(--space-xs);
