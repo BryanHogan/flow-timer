@@ -417,7 +417,6 @@
     }
     .h2-row-container {
         align-items: center;
-        margin-bottom: var(--space-s);
         gap: var(--space-xs);
     }
 
