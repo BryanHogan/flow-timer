@@ -1,6 +1,7 @@
 <script>
     /* ========================= Variables ========================= */
     import { showOptions, showHowTo } from "../stores/state.svelte.js";
+    import { onMount } from 'svelte';
 
     let itemList = $state([
         { name: "Task 1", length: 5 },
@@ -46,6 +47,7 @@
     function toggleHowToUse() {
         showHowTo.update((open) => !open);
     }
+    let titleClockFace = $derived(timerBegan ? clockFace : "Flow Timer");
 
     /* ========================= Timer Functions ========================= */
 
@@ -203,10 +205,12 @@
     }
 </script>
 
+<svelte:head><title>{titleClockFace}</title></svelte:head>
 <main class="base-layout">
     <h1 class="text-align-center">
         Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span>
     </h1>
+    
     {#if $showHowTo}
         <section class="margin-inline-auto description-container section">
             <div class="flex-center flex-row h2-row-container">
