@@ -1,12 +1,14 @@
 ---
 import { Image } from "astro:assets";
 import Icon from "./Icon.astro";
+import SettingsToggle from "../components/SettingsToggle.svelte";
+import HowToToggle from "../components/HowToToggle.svelte"
 ---
 
 <div class="backdrop-area">
     <div class="header-container">
         <header>
-            <a href="/"
+            <a href="/" class="logo-a"
                 ><Image
                     src="/icons/Flow-Timer-Logo.svg"
                     alt="Logo icon"
@@ -15,6 +17,8 @@ import Icon from "./Icon.astro";
                     class="logo"
                 /></a
             >
+            <SettingsToggle client:load />
+            <HowToToggle client:load />
             <button
                 aria-controls="primary-navigation"
                 aria-expanded="false"
@@ -43,6 +47,9 @@ import Icon from "./Icon.astro";
 </div>
 
 <style>
+    .logo-a {
+        margin-right: auto;
+    }
     .logo {
         margin-left: 0.25rem;
     }
@@ -75,6 +82,7 @@ import Icon from "./Icon.astro";
         padding-inline: var(--side-gap-padding);
         padding-block: var(--space-xs);
         height: var(--navbar-height);
+        gap: var(--space-m);
     }
     .primary-navigation ul {
         display: flex;

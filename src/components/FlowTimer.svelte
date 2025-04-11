@@ -1,5 +1,7 @@
 <script>
     /* ========================= Variables ========================= */
+    import { showOptions, showHowTo } from "../stores/state.svelte.js";
+
     let itemList = $state([
         { name: "Task 1", length: 5 },
         { name: "Task 2", length: 5 },
@@ -20,14 +22,11 @@
     let timerActive = $state(false);
     let timerBegan = $state(false);
     let remainingTime = $derived(
-        Math.max(0, (itemList[currentActiveItem].length * 60) - currentTime),
+        Math.max(0, itemList[currentActiveItem].length * 60 - currentTime),
     );
 
     let playNotification = $state(false);
     let playSound = $state("none");
-
-    let showOptions = $state(true);
-    let showHowToUse = $state(true);
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
@@ -40,6 +39,13 @@
             (clockSeconds < 10 ? "0" : "") +
             clockSeconds,
     );
+
+    function toggleSettings() {
+        showOptions.update((open) => !open);
+    }
+    function toggleHowToUse() {
+        showHowTo.update((open) => !open);
+    }
 
     /* ========================= Timer Functions ========================= */
 
@@ -201,22 +207,22 @@
     <h1 class="text-align-center">
         Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span>
     </h1>
-    <section class="margin-inline-auto description-container section">
-        <div class="flex-center flex-row h2-row-container">
-            <h2 class="simpler-h2 text-align-center">
-                How to use<span class="visually-hidden"> flow timer</span>
-            </h2>
-            <button onclick={() => (showHowToUse = !showHowToUse)}>
-                <img
-                    src="/icons/Chevron-Up-Icon.svg"
-                    alt="Chevron Up Icon"
-                    width="24"
-                    height="24"
-                    class={showHowToUse ? "chevron-down" : "chevron-right"}
-                />
-            </button>
-        </div>
-        {#if showHowToUse}
+    {#if $showHowTo}
+        <section class="margin-inline-auto description-container section">
+            <div class="flex-center flex-row h2-row-container">
+                <h2 class="simpler-h2 text-align-center">
+                    How to use<span class="visually-hidden"> flow timer</span>
+                </h2>
+                <button onclick={toggleHowToUse}>
+                    <img
+                        src="/icons/Close-Icon.svg"
+                        alt="Close Icon"
+                        width="24"
+                        height="24"
+                    />
+                </button>
+            </div>
+
             <div class="margin-inline-auto" style="width: fit-content;">
                 <ol style="padding-left: 0; list-style-position: inside;">
                     <li>Add items to the list. Include name and length.</li>
@@ -224,22 +230,22 @@
                 </ol>
                 <p>Learn about the benefits of time-boxing.</p>
             </div>
-        {/if}
-    </section>
-    <section class="section options-container margin-inline-auto">
-        <div class="flex-center flex-row h2-row-container">
-            <h2 class="simpler-h2 text-align-center">Options</h2>
-            <button onclick={() => (showOptions = !showOptions)}>
-                <img
-                    src="/icons/Chevron-Up-Icon.svg"
-                    alt="Chevron Up Icon"
-                    width="24"
-                    height="24"
-                    class={showOptions ? "chevron-down" : "chevron-right"}
-                />
-            </button>
-        </div>
-        {#if showOptions}
+        </section>
+    {/if}
+    {#if $showOptions}
+        <section class="section options-container margin-inline-auto">
+            <div class="flex-center flex-row h2-row-container">
+                <h2 class="simpler-h2 text-align-center">Options</h2>
+                <button onclick={toggleSettings}>
+                    <img
+                        src="/icons/Close-Icon.svg"
+                        alt="Close Icon"
+                        width="24"
+                        height="24"
+                    />
+                </button>
+            </div>
+
             <ul role="list">
                 <li>
                     <label
@@ -267,8 +273,8 @@
                     >
                 </li>
             </ul>
-        {/if}
-    </section>
+        </section>
+    {/if}
     <section class="section controls-container">
         <h2 class="text-align-center" style="margin-top: var(--space-m);">
             {statusMessage}
@@ -362,7 +368,10 @@
             </ul>
         </div>
     </section>
-    <div class="section flex-center" style="gap: var(--space-m); padding-bottom: var(--space-xl);">
+    <div
+        class="section flex-center"
+        style="gap: var(--space-m); padding-bottom: var(--space-xl);"
+    >
         <button onclick={resetTimer}>
             <img
                 src="/icons/Reset-Timer-Icon.svg"
@@ -434,12 +443,6 @@
     .glow {
         box-shadow: 0px 0px 2px 1px var(--color-accent-600);
         background-color: var(--color-accent-800);
-    }
-    .chevron-down {
-        transform: rotate(180deg);
-    }
-    .chevron-right {
-        transform: rotate(90deg);
     }
 
     .description-container,
