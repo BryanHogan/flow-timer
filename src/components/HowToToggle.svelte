@@ -17,6 +17,7 @@
     transition: var(--transition-normal) color;
     font-weight: var(--font-weight-semi-bold);
     cursor: pointer;
+    padding-inline: 4px;
     &:hover {
       color: var(--a-hover-color);
     }

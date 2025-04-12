@@ -17,8 +17,6 @@ import HowToToggle from "../components/HowToToggle.svelte"
                     class="logo"
                 /></a
             >
-            <SettingsToggle client:load />
-            <HowToToggle client:load />
             <button
                 aria-controls="primary-navigation"
                 aria-expanded="false"
@@ -29,16 +27,20 @@ import HowToToggle from "../components/HowToToggle.svelte"
                     size="1.5rem"
                     label="Bars"
                     class="hamburger-icon"
+                    color="var(--color-neutral-300)"
                 />
                 <Icon
                     name="close"
                     size="1.5rem"
                     label="Close"
                     class="close-icon"
+                    color="var(--color-neutral-300)"
                 />
             </button>
             <nav class="primary-navigation" id="primary-navigation">
                 <ul role="list">
+                    <li><SettingsToggle client:load /></li>
+                    <li><HowToToggle client:load /></li>
                     <li><a href="/about">About</a></li>
                 </ul>
             </nav>
@@ -86,9 +88,11 @@ import HowToToggle from "../components/HowToToggle.svelte"
     }
     .primary-navigation ul {
         display: flex;
+        align-items: center;
         gap: 1rem;
         & li a {
             padding: var(--space-s);
+            padding-inline: 4px;
             color: var(--color-neutral-500);
             text-decoration: none;
             transition: var(--transition-normal) color;
