@@ -110,10 +110,8 @@
     .eyebrow {
         margin: 0 0 var(--space-2xs);
         color: var(--color-neutral-500);
-        font-size: 0.6875rem;
+        font-size: var(--font-size-small);
         font-weight: var(--font-weight-semi-bold);
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
     }
 
     .settings-row {
