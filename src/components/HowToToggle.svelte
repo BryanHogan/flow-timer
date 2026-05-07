@@ -1,12 +1,18 @@
 <script>
-  import { showHowTo } from "../stores/state.svelte.js";
+  import { showHowTo, showOptions } from "../stores/state.svelte.js";
 
-  function toggleSettings() {
+  function openHowTo() {
+    if (window.location.pathname !== "/") {
+      window.location.href = "/?panel=how-to";
+      return;
+    }
+
+    showOptions.set(false);
     showHowTo.update((open) => !open);
   }
 </script>
 
-<button onclick={toggleSettings}> How To Use </button>
+<button onclick={openHowTo} title="How to use Flow Timer">How To Use</button>
 
 <style>
   button {

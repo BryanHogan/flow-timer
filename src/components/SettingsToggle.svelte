@@ -1,15 +1,22 @@
 <script>
-    import { showOptions } from "../stores/state.svelte.js";
+    import { showOptions, showHowTo } from "../stores/state.svelte.js";
 
-    function toggleSettings() {
+    function openSettings() {
+        if (window.location.pathname !== "/") {
+            window.location.href = "/?panel=options";
+            return;
+        }
+
+        showHowTo.set(false);
         showOptions.update((open) => !open);
     }
 </script>
 
-<button onclick={toggleSettings}>
+<button onclick={openSettings} aria-label="Open timer options" title="Open timer options">
     <img
         src="/icons/Settings-Icon.svg"
-        alt="Close Icon"
+        alt=""
+        aria-hidden="true"
         width="24"
         height="24"
     />

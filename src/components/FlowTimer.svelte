@@ -1,33 +1,39 @@
 <script>
-    /* ========================= Variables ========================= */
+    import { onDestroy, onMount } from "svelte";
     import { showOptions, showHowTo } from "../stores/state.svelte.js";
-    import { onMount } from 'svelte';
+    import HowToPanel from "./HowToPanel.svelte";
+    import TimerControls from "./TimerControls.svelte";
+    import TimerOptions from "./TimerOptions.svelte";
+    import TimerResetControls from "./TimerResetControls.svelte";
+    import TaskListEditor from "./TaskListEditor.svelte";
 
-    let itemList = $state([
+    const OPTIONS_STORAGE_KEY = "flow-timer-options";
+
+    const createDefaultItems = () => [
         { name: "Task 1", length: 5 },
         { name: "Task 2", length: 5 },
         { name: "", length: 10 },
-    ]);
-    let intervalID;
-    let intervalIDTotal;
+    ];
 
-    const totalTime = $derived.by(() =>
-        itemList.reduce((sum, item) => sum + item.length, 0),
-    );
+    let itemList = $state(createDefaultItems());
+    let intervalID = null;
+    let intervalIDTotal = null;
+    let optionsLoaded = $state(false);
 
     let statusMessage = $state("Ready?");
     let currentActiveItem = $state(0);
-
     let currentTime = $state(0);
     let totalTimePassed = $state(0);
     let timerActive = $state(false);
     let timerBegan = $state(false);
-    let remainingTime = $derived(
-        Math.max(0, itemList[currentActiveItem].length * 60 - currentTime),
-    );
-
     let playNotification = $state(false);
     let playSound = $state("none");
+
+    let currentItem = $derived(itemList[currentActiveItem] ?? { name: "", length: 0 });
+    let activeItemLength = $derived(Number(currentItem.length) || 0);
+    let remainingTime = $derived(
+        Math.max(0, activeItemLength * 60 - currentTime),
+    );
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
     let clockMinutes = $derived(Math.floor((remainingTime % 3600) / 60));
@@ -41,57 +47,145 @@
             clockSeconds,
     );
 
-    function toggleSettings() {
-        showOptions.update((open) => !open);
-    }
-    function toggleHowToUse() {
-        showHowTo.update((open) => !open);
-    }
-    let titleClockFace = $derived(timerBegan ? clockFace : "Flow Timer");
+    let titleClockFace = $derived.by(() => {
+        if (timerBegan) {
+            const taskTitle = statusMessage ? `${statusMessage} - ` : "";
+            const timerState = timerActive ? "" : "Paused - ";
+            return `${timerState}${clockFace} - ${taskTitle}Flow Timer`;
+        }
 
-    /* ========================= Timer Functions ========================= */
+        if (statusMessage === "Complete!") {
+            return "Complete - Flow Timer";
+        }
 
-    function toggleTimer() {
-        if (timerBegan == false) {
-            startTimer();
-        } else {
-            timerActive = !timerActive;
+        return "Flow Timer";
+    });
+
+    onMount(() => {
+        restoreOptions();
+        applyPanelFromUrl();
+    });
+
+    onDestroy(() => {
+        clearTimers();
+    });
+
+    $effect(() => {
+        checkIfItemListFull();
+    });
+
+    $effect(() => {
+        if (!optionsLoaded) return;
+
+        try {
+            localStorage.setItem(
+                OPTIONS_STORAGE_KEY,
+                JSON.stringify({ playSound, playNotification }),
+            );
+        } catch (error) {
+            console.warn("Unable to save Flow Timer options:", error);
+        }
+    });
+
+    function restoreOptions() {
+        try {
+            const storedOptions = localStorage.getItem(OPTIONS_STORAGE_KEY);
+            if (!storedOptions) {
+                optionsLoaded = true;
+                return;
+            }
+
+            const options = JSON.parse(storedOptions);
+            if (["none", "pluck", "clang"].includes(options.playSound)) {
+                playSound = options.playSound;
+            }
+            if (typeof options.playNotification === "boolean") {
+                playNotification = options.playNotification;
+            }
+        } catch (error) {
+            console.warn("Unable to restore Flow Timer options:", error);
+        } finally {
+            optionsLoaded = true;
         }
     }
 
-    function finishTimer() {
-        timerActive = false;
-        statusMessage = "Complete!";
-        timerBegan = false;
+    function applyPanelFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const panel = params.get("panel");
+
+        if (panel === "options") {
+            showOptions.set(true);
+            showHowTo.set(false);
+            removePanelParam(params);
+        }
+
+        if (panel === "how-to") {
+            showHowTo.set(true);
+            showOptions.set(false);
+            removePanelParam(params);
+        }
+    }
+
+    function removePanelParam(params) {
+        params.delete("panel");
+        const query = params.toString();
+        const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}`;
+        window.history.replaceState({}, "", nextUrl);
+    }
+
+    function closeHowToUse() {
+        showHowTo.set(false);
+    }
+
+    function closeSettings() {
+        showOptions.set(false);
+    }
+
+    function toggleTimer() {
+        if (!timerBegan) {
+            startTimer();
+            return;
+        }
+
+        timerActive = !timerActive;
     }
 
     function startTimer() {
-        askNotificationPermission();
+        const preparedItems = getPreparedItems();
+
+        if (preparedItems.length === 0) {
+            resetTimer();
+            statusMessage = "Add at least one task.";
+            return;
+        }
+
+        if (playNotification) {
+            askNotificationPermission();
+        }
+
+        clearTimers();
+        itemList = preparedItems;
+        currentActiveItem = 0;
+        currentTime = 0;
+        totalTimePassed = 0;
+        statusMessage = itemList[currentActiveItem].name;
         timerActive = true;
         timerBegan = true;
-        currentActiveItem = 0;
-        statusMessage = itemList[currentActiveItem].name;
-        prepareList();
-        countTotalTimePassed();
-        currentTime = 0;
-        if (intervalID) {
-            clearInterval(intervalID);
-        }
-        intervalID = setInterval(() => {
-            if (timerActive && timerBegan) {
-                currentTime = currentTime + 1;
-                if (currentTime > itemList[currentActiveItem].length * 60) {
-                    goNextItem();
-                }
-            }
-        }, 1000);
+        startIntervals();
     }
 
-    function countTotalTimePassed() {
-        totalTimePassed = 0;
-        if (intervalIDTotal) {
-            clearInterval(intervalIDTotal);
-        }
+    function startIntervals() {
+        intervalID = setInterval(() => {
+            if (!timerActive || !timerBegan) return;
+
+            const nextTime = currentTime + 1;
+            currentTime = nextTime;
+
+            if (nextTime >= Number(itemList[currentActiveItem].length) * 60) {
+                goNextItem();
+            }
+        }, 1000);
+
         intervalIDTotal = setInterval(() => {
             if (timerActive && timerBegan) {
                 totalTimePassed = totalTimePassed + 1;
@@ -99,18 +193,31 @@
         }, 1000);
     }
 
+    function finishTimer() {
+        clearTimers();
+        timerActive = false;
+        timerBegan = false;
+        statusMessage = "Complete!";
+    }
+
     function goNextItem() {
+        if (!timerBegan) return;
+
         sendNotification();
+
         if (currentActiveItem < itemList.length - 1) {
             currentActiveItem = currentActiveItem + 1;
             statusMessage = itemList[currentActiveItem].name;
             currentTime = 0;
-        } else {
-            finishTimer();
+            return;
         }
+
+        currentTime = activeItemLength * 60;
+        finishTimer();
     }
 
     function resetTimer() {
+        clearTimers();
         timerBegan = false;
         currentTime = 0;
         currentActiveItem = 0;
@@ -119,29 +226,43 @@
         statusMessage = "Ready?";
     }
 
-    /* ========================= List Functions ========================= */
+    function resetAll() {
+        resetTimer();
+        itemList = [{ name: "Task 1", length: 10 }];
+    }
 
-    function checkIfItemListFull() {
-        if (timerBegan == false) {
-            let itemListLength = itemList.length;
-            if (
-                itemList.length != 0 &&
-                itemList[itemListLength - 1].name != "" &&
-                itemList[itemListLength - 1].length
-            ) {
-                createNewInputField();
-            }
+    function clearTimers() {
+        if (intervalID) {
+            clearInterval(intervalID);
+            intervalID = null;
+        }
+        if (intervalIDTotal) {
+            clearInterval(intervalIDTotal);
+            intervalIDTotal = null;
         }
     }
 
-    $effect(() => {
-        checkIfItemListFull();
-    });
+    function checkIfItemListFull() {
+        if (timerBegan) return;
 
-    function prepareList() {
-        itemList = itemList.filter(
-            (item) => item.name !== "" && item.length > 0,
-        );
+        if (itemList.length === 0) {
+            createNewInputField();
+            return;
+        }
+
+        const lastItem = itemList[itemList.length - 1];
+        if (lastItem.name.trim() !== "" && Number(lastItem.length) > 0) {
+            createNewInputField();
+        }
+    }
+
+    function getPreparedItems() {
+        return itemList
+            .map((item) => ({
+                name: item.name.trim(),
+                length: Number(item.length),
+            }))
+            .filter((item) => item.name !== "" && item.length > 0);
     }
 
     function createNewInputField() {
@@ -149,408 +270,128 @@
     }
 
     function redoCurrent() {
-        if (currentTime == 0 && currentActiveItem > 0) {
+        if (!timerBegan) return;
+
+        if (currentTime === 0 && currentActiveItem > 0) {
             currentActiveItem = currentActiveItem - 1;
             statusMessage = itemList[currentActiveItem].name;
         }
         currentTime = 0;
     }
 
-    function resetAll() {
-        resetTimer();
-        itemList = [{ name: "Task 1", length: 10 }];
+    function updateItemName(index, name) {
+        itemList[index].name = name;
     }
 
-    /* ========================= Notifications ========================= */
+    function updateItemLength(index, length) {
+        itemList[index].length = length;
+    }
+
+    function updateSound(sound) {
+        playSound = sound;
+    }
+
+    function updateNotificationPreference(enabled) {
+        playNotification = enabled;
+        if (enabled) {
+            askNotificationPermission();
+        }
+    }
 
     function askNotificationPermission() {
-        if (!("Notification" in window)) {
-            return;
-        }
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "default") return;
+
         Notification.requestPermission();
     }
 
     function sendNotification() {
         playSoundNotification();
-        if (playNotification && "Notification" in window) {
-            if (Notification.permission === "granted") {
-                const text = `Your time for ${itemList[currentActiveItem].name} is over.`;
-                try {
-                    new Notification("Flow Timer", { body: text });
-                } catch (error) {
-                    console.error("Error showing notification:", error);
-                }
-            } else {
-                console.warn("Notification permission not granted or denied.");
+
+        if (!playNotification || !("Notification" in window)) return;
+
+        if (Notification.permission === "granted") {
+            const text = `Your time for ${currentItem.name} is over.`;
+            try {
+                new Notification("Flow Timer", { body: text });
+            } catch (error) {
+                console.error("Error showing notification:", error);
             }
         }
     }
+
     function playSoundNotification() {
-        if (playSound == "pluck") {
-            let pluckSound = new Audio("/sounds/notification-pluck.mp3");
-            pluckSound.play();
-        }
-        if (playSound == "clang") {
-            let clangSound = new Audio("/sounds/notification-clang.mp3");
-            clangSound.play();
-        }
+        if (playSound === "none" || !("Audio" in window)) return;
+
+        const soundPath =
+            playSound === "pluck"
+                ? "/sounds/notification-pluck.mp3"
+                : "/sounds/notification-clang.mp3";
+        const sound = new Audio(soundPath);
+        sound.play().catch((error) => {
+            console.warn("Unable to play notification sound:", error);
+        });
     }
 
-    function testNotification() {
-        Notification.requestPermission();
-        const text = `Test notification. You rock 🎸!`;
-        new Notification("Flow Timer", {
-            body: text,
-        });
+    async function testNotification() {
+        if (!("Notification" in window)) return;
+
+        const permission =
+            Notification.permission === "default"
+                ? await Notification.requestPermission()
+                : Notification.permission;
+
+        if (permission === "granted") {
+            new Notification("Flow Timer", {
+                body: "Test notification.",
+            });
+        }
     }
 </script>
 
 <svelte:head><title>{titleClockFace}</title></svelte:head>
+
 <main class="base-layout">
     <h1 class="text-align-center">
         Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span>
     </h1>
-    
+
     {#if $showHowTo}
-        <section class="margin-inline-auto description-container section">
-            <div class="flex-center flex-row h2-row-container">
-                <h2 class="simpler-h2 text-align-center">
-                    How to use<span class="visually-hidden"> flow timer</span>
-                </h2>
-                <button onclick={toggleHowToUse}>
-                    <img
-                        src="/icons/Close-Icon.svg"
-                        alt="Close Icon"
-                        width="24"
-                        height="24"
-                    />
-                </button>
-            </div>
-
-            <div class="margin-inline-auto" style="width: fit-content;">
-                <ol style="padding-left: 0; list-style-position: inside;">
-                    <li>Add items to the list. Include name and length.</li>
-                    <li>Press play to start flow timer.</li>
-                </ol>
-                <p>Learn about the benefits of time-boxing.</p>
-            </div>
-        </section>
+        <HowToPanel onClose={closeHowToUse} />
     {/if}
+
     {#if $showOptions}
-        <section class="section options-container margin-inline-auto">
-            <div class="flex-center flex-row h2-row-container">
-                <h2 class="simpler-h2 text-align-center">Options</h2>
-                <button onclick={toggleSettings}>
-                    <img
-                        src="/icons/Close-Icon.svg"
-                        alt="Close Icon"
-                        width="24"
-                        height="24"
-                    />
-                </button>
-            </div>
-
-            <ul role="list">
-                <li>
-                    <label
-                        >Sound:
-                        <select bind:value={playSound}>
-                            <option value="none">None</option>
-                            <option value="pluck">Pluck</option>
-                            <option value="clang">Clang</option>
-                        </select>
-                    </label>
-                    <button onclick={playSoundNotification}
-                        ><small>Test sound</small></button
-                    >
-                </li>
-                <li>
-                    <label>
-                        Send Notification
-                        <input
-                            type="checkbox"
-                            bind:checked={playNotification}
-                        />
-                    </label>
-                    <button onclick={testNotification}
-                        ><small>Test notification</small></button
-                    >
-                </li>
-            </ul>
-        </section>
+        <TimerOptions
+            {playSound}
+            {playNotification}
+            onSoundChange={updateSound}
+            onNotificationChange={updateNotificationPreference}
+            onTestSound={playSoundNotification}
+            onTestNotification={testNotification}
+            onClose={closeSettings}
+        />
     {/if}
-    <section class="section controls-container">
-        <h2 class="text-align-center" style="margin-top: var(--space-m);">
-            {statusMessage}
-        </h2>
-        <p
-            class="current-time text-align-center"
-            style="padding-bottom: var(--space-m);"
-        >
-            {clockFace}
-        </p>
-        <div class="button-control-group">
-            <button onclick={redoCurrent}>
-                <img
-                    src="/icons/Skip-Back-Icon.svg"
-                    alt="Skip-back Icon"
-                    width="24"
-                    height="24"
-                />
-            </button>
-            <button onclick={toggleTimer} class={timerBegan ? "" : "glow"}>
-                {#if timerActive}
-                    <img
-                        src="/icons/Pause-Icon.svg"
-                        alt="Pause Icon"
-                        width="24"
-                        height="24"
-                    />
-                {:else}
-                    <img
-                        src="/icons/Play-Icon.svg"
-                        alt="Play Icon"
-                        width="24"
-                        height="24"
-                    />
-                {/if}
-            </button>
-            <button onclick={goNextItem}>
-                <img
-                    src="/icons/Skip-Icon.svg"
-                    alt="Skip Icon"
-                    width="24"
-                    height="24"
-                />
-            </button>
-        </div>
-        <p class="text-align-center" style="margin-top: var(--space-m);">
-            {#if timerBegan}
-                {currentActiveItem + 1} / {itemList.length}
-            {:else}
-                Click play to start timer.
-            {/if}
-        </p>
-        <progress
-            max={itemList[currentActiveItem].length * 60}
-            value={currentTime}
-            style="width: 100%;"
-            >{currentTime} / {itemList[currentActiveItem].length * 60}</progress
-        >
-    </section>
-    <section class="margin-inline-auto section" style="width: 100%">
-        <h2 class="simpler-h2 text-align-center visually-hidden">Input area</h2>
-        <div class="input-container">
-            <div
-                class="input-description"
-                style="padding-bottom: var(--space-s);"
-            >
-                <p class="name">Name</p>
-                <p class="length">Length (min)</p>
-            </div>
-            <ul role="list">
-                {#each itemList as item}
-                    <li class="item-input-row" role="listitem">
-                        <input
-                            type="text"
-                            bind:value={item.name}
-                            class="name-input"
-                            disabled={timerBegan}
-                            aria-disabled={timerBegan}
-                            aria-label="Input field for item name"
-                        />
-                        <input
-                            type="number"
-                            bind:value={item.length}
-                            class="length-input"
-                            disabled={timerBegan}
-                            aria-disabled={timerBegan}
-                            aria-label="Input field for item length in minutes"
-                        />
-                    </li>
-                {/each}
-            </ul>
-        </div>
-    </section>
-    <div
-        class="section flex-center"
-        style="gap: var(--space-m); padding-bottom: var(--space-xl);"
-    >
-        <button onclick={resetTimer}>
-            <img
-                src="/icons/Reset-Timer-Icon.svg"
-                alt="Reset timer icon"
-                width="24"
-                height="24"
-            />
-        </button>
-        <button onclick={resetAll}>
-            <img
-                src="/icons/Reset-All-Icon.svg"
-                alt="Reset all icon"
-                width="24"
-                height="24"
-            />
-        </button>
-    </div>
+
+    <TimerControls
+        {statusMessage}
+        {clockFace}
+        {timerActive}
+        {timerBegan}
+        {currentActiveItem}
+        itemCount={itemList.length}
+        {currentTime}
+        {activeItemLength}
+        onRedo={redoCurrent}
+        onToggle={toggleTimer}
+        onSkip={goNextItem}
+    />
+
+    <TaskListEditor
+        {itemList}
+        {timerBegan}
+        onNameChange={updateItemName}
+        onLengthChange={updateItemLength}
+    />
+
+    <TimerResetControls onResetTimer={resetTimer} onResetAll={resetAll} />
 </main>
-
-<style>
-    progress,
-    progress::-webkit-progress-bar {
-        background-color: var(--color-accent-500); /* background */
-        background-image: linear-gradient(
-            140deg,
-            var(--color-accent-500),
-            var(--color-accent-300),
-            var(--color-accent-500)
-        );
-        accent-color: var(--color-neutral-800); /* moving bar, needed? */
-        border: 1px solid var(--color-neutral-800);
-        height: 3px;
-    }
-    progress::-moz-progress-bar {
-        background-color: var(--color-neutral-800); /* moving bar */
-    }
-
-    progress::-webkit-progress-value {
-        border: 1px solid var(--color-neutral-800) !important;
-        border-left: none;
-        box-shadow: none;
-        background-color: var(--color-neutral-800); /* moving bar */
-    }
-
-    .section {
-        margin-top: var(--space-l);
-    }
-    .simpler-h2 {
-        font-size: var(--text-size-xl);
-        font-weight: var(--font-weight-normal);
-        color: var(--color-neutral-300);
-    }
-    .h2-row-container {
-        align-items: center;
-        gap: var(--space-xs);
-    }
-
-    button {
-        background-color: transparent;
-        padding: var(--space-xs);
-        border: 0;
-        border-radius: var(--border-radius-s);
-        transition: background-color var(--transition-normal);
-        &:hover {
-            background-color: var(--color-accent-700);
-            cursor: pointer;
-        }
-    }
-    .glow {
-        box-shadow: 0px 0px 2px 1px var(--color-accent-600);
-        background-color: var(--color-accent-800);
-    }
-
-    .description-container,
-    .options-container {
-        border: 1px solid var(--color-neutral-700);
-        border-radius: var(--border-radius-m);
-        padding: var(--space-m) var(--space-s);
-        max-width: 450px;
-        width: 100%;
-        & div ol {
-            padding-bottom: var(--space-2xs);
-        }
-        & img {
-            transition: transform var(--transition-normal);
-        }
-    }
-    .options-container ul {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2xs);
-        & li {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space-s);
-        }
-    }
-
-    .controls-container {
-        background-color: var(--color-neutral-800);
-        border-radius: var(--border-radius-m);
-        padding: var(--space-m) var(--space-s);
-        max-width: 80%;
-        width: 100%;
-        margin-inline: auto;
-        transition: all 1.2s ease;
-        & h2 {
-            font-size: var(--text-size-3xl);
-            font-weight: var(--font-weight-normal);
-        }
-        & .current-time {
-            font-size: var(--text-size-5xl);
-            font-weight: var(--font-weight-bold);
-        }
-        & .button-control-group {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: var(--space-m);
-        }
-    }
-
-    .input-container {
-        max-width: 1250px;
-        margin-inline: auto;
-        & ul {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: var(--space-m);
-        }
-        & .item-input-row {
-            display: flex;
-            width: 100%;
-            flex-direction: row;
-            justify-content: center;
-            gap: var(--space-xs);
-            & input {
-                background-color: var(--color-accent-800);
-                border: 1px solid transparent;
-                padding: 0.25rem;
-                border-radius: 2px;
-                &:focus {
-                    background-color: var(--color-accent-700);
-                }
-            }
-            & .name-input {
-                width: 60%;
-                max-width: 22rem;
-            }
-            & .length-input {
-                width: 20%;
-                max-width: 6rem;
-            }
-        }
-        & .input-description {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            & .name {
-                width: 60%;
-                max-width: calc(22rem + var(--space-s));
-            }
-            & .length {
-                width: 20%;
-                max-width: 6rem;
-            }
-        }
-    }
-    @media only screen and (max-width: 700px) {
-        .controls-container {
-            max-width: 100%;
-        }
-    }
-</style>
