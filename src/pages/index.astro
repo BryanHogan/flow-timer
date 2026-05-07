@@ -1,8 +1,21 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import FlowTimer from "../components/FlowTimer.svelte"
+import FlowTimer from "../components/FlowTimer.svelte";
 ---
 
 <BaseLayout title="Flow Timer" description="A timer to help you stay focused and productive. Time-box your tasks quickly.">
-	<FlowTimer client:load/>
+	<main class="timer-page">
+		<div class="base-layout">
+			<h1 class="text-align-center">
+				Flow Timer<span class="visually-hidden"> - the Time-Boxing Tool</span>
+			</h1>
+		</div>
+		<FlowTimer client:load />
+	</main>
 </BaseLayout>
+
+<style>
+	.timer-page {
+		padding-bottom: var(--space-xl);
+	}
+</style>

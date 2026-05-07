@@ -6,24 +6,10 @@
         onNotificationChange,
         onTestSound,
         onTestNotification,
-        onClose,
     } = $props();
 </script>
 
-<section class="section options-container margin-inline-auto">
-    <div class="flex-center flex-row h2-row-container">
-        <h2 class="simpler-h2 text-align-center">Options</h2>
-        <button onclick={onClose} aria-label="Close options" title="Close options">
-            <img
-                src="/icons/Close-Icon.svg"
-                alt=""
-                aria-hidden="true"
-                width="24"
-                height="24"
-            />
-        </button>
-    </div>
-
+<div class="options-container">
     <ul role="list">
         <li>
             <label>
@@ -60,33 +46,15 @@
             </button>
         </li>
     </ul>
-</section>
+</div>
 
 <style>
-    .section {
-        margin-top: var(--space-l);
-    }
-    .simpler-h2 {
-        font-size: var(--text-size-xl);
-        font-weight: var(--font-weight-normal);
-        color: var(--color-neutral-300);
-    }
-    .h2-row-container {
-        align-items: center;
-        gap: var(--space-xs);
-    }
-    .options-container {
-        border: 1px solid var(--color-neutral-700);
-        border-radius: var(--border-radius-m);
-        padding: var(--space-m) var(--space-s);
-        max-width: 450px;
-        width: 100%;
-    }
     ul {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2xs);
+        gap: var(--space-s);
     }
+
     li {
         display: flex;
         flex-direction: row;
@@ -94,6 +62,19 @@
         justify-content: space-between;
         gap: var(--space-s);
     }
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        color: var(--color-neutral-300);
+    }
+
+    select,
+    input {
+        accent-color: var(--color-accent-500);
+    }
+
     button {
         background-color: transparent;
         padding: var(--space-xs);
@@ -103,6 +84,13 @@
         &:hover {
             background-color: var(--color-accent-700);
             cursor: pointer;
+        }
+    }
+
+    @media only screen and (max-width: 35rem) {
+        li {
+            align-items: flex-start;
+            flex-direction: column;
         }
     }
 </style>

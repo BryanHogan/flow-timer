@@ -3,11 +3,13 @@
     import { showOptions, showHowTo } from "../stores/state.svelte.js";
     import HowToPanel from "./HowToPanel.svelte";
     import TimerControls from "./TimerControls.svelte";
+    import TimerModal from "./TimerModal.svelte";
     import TimerOptions from "./TimerOptions.svelte";
     import TimerResetControls from "./TimerResetControls.svelte";
     import TaskListEditor from "./TaskListEditor.svelte";
 
     const OPTIONS_STORAGE_KEY = "flow-timer-options";
+    const SECONDS_PER_MINUTE = 60;
 
     const createDefaultItems = () => [
         { name: "Task 1", length: 5 },
@@ -15,15 +17,15 @@
         { name: "", length: 10 },
     ];
 
+    const createBlankItem = () => ({ name: "", length: null });
+
     let itemList = $state(createDefaultItems());
     let intervalID = null;
-    let intervalIDTotal = null;
     let optionsLoaded = $state(false);
 
     let statusMessage = $state("Ready?");
     let currentActiveItem = $state(0);
     let currentTime = $state(0);
-    let totalTimePassed = $state(0);
     let timerActive = $state(false);
     let timerBegan = $state(false);
     let playNotification = $state(false);
@@ -32,7 +34,7 @@
     let currentItem = $derived(itemList[currentActiveItem] ?? { name: "", length: 0 });
     let activeItemLength = $derived(Number(currentItem.length) || 0);
     let remainingTime = $derived(
-        Math.max(0, activeItemLength * 60 - currentTime),
+        Math.max(0, activeItemLength * SECONDS_PER_MINUTE - currentTime),
     );
 
     let clockHours = $derived(Math.floor(remainingTime / 3600));
@@ -167,7 +169,6 @@
         itemList = preparedItems;
         currentActiveItem = 0;
         currentTime = 0;
-        totalTimePassed = 0;
         statusMessage = itemList[currentActiveItem].name;
         timerActive = true;
         timerBegan = true;
@@ -181,14 +182,11 @@
             const nextTime = currentTime + 1;
             currentTime = nextTime;
 
-            if (nextTime >= Number(itemList[currentActiveItem].length) * 60) {
+            if (
+                nextTime >=
+                Number(itemList[currentActiveItem].length) * SECONDS_PER_MINUTE
+            ) {
                 goNextItem();
-            }
-        }, 1000);
-
-        intervalIDTotal = setInterval(() => {
-            if (timerActive && timerBegan) {
-                totalTimePassed = totalTimePassed + 1;
             }
         }, 1000);
     }
@@ -212,7 +210,7 @@
             return;
         }
 
-        currentTime = activeItemLength * 60;
+        currentTime = activeItemLength * SECONDS_PER_MINUTE;
         finishTimer();
     }
 
@@ -221,7 +219,6 @@
         timerBegan = false;
         currentTime = 0;
         currentActiveItem = 0;
-        totalTimePassed = 0;
         timerActive = false;
         statusMessage = "Ready?";
     }
@@ -235,10 +232,6 @@
         if (intervalID) {
             clearInterval(intervalID);
             intervalID = null;
-        }
-        if (intervalIDTotal) {
-            clearInterval(intervalIDTotal);
-            intervalIDTotal = null;
         }
     }
 
@@ -266,7 +259,7 @@
     }
 
     function createNewInputField() {
-        itemList.push({ name: "", length: null });
+        itemList = [...itemList, createBlankItem()];
     }
 
     function redoCurrent() {
@@ -351,25 +344,34 @@
 
 <svelte:head><title>{titleClockFace}</title></svelte:head>
 
-<main class="base-layout">
-    <h1 class="text-align-center">
-        Flow Timer<span class="visually-hidden">- the Time-Boxing Tool</span>
-    </h1>
-
+<section class="base-layout timer-shell" aria-label="Flow Timer controls">
     {#if $showHowTo}
-        <HowToPanel onClose={closeHowToUse} />
+        <TimerModal
+            title="How to use"
+            closeLabel="Close how to use"
+            labelledBy="how-to-modal-title"
+            onClose={closeHowToUse}
+        >
+            <HowToPanel />
+        </TimerModal>
     {/if}
 
     {#if $showOptions}
-        <TimerOptions
-            {playSound}
-            {playNotification}
-            onSoundChange={updateSound}
-            onNotificationChange={updateNotificationPreference}
-            onTestSound={playSoundNotification}
-            onTestNotification={testNotification}
+        <TimerModal
+            title="Settings"
+            closeLabel="Close settings"
+            labelledBy="settings-modal-title"
             onClose={closeSettings}
-        />
+        >
+            <TimerOptions
+                {playSound}
+                {playNotification}
+                onSoundChange={updateSound}
+                onNotificationChange={updateNotificationPreference}
+                onTestSound={playSoundNotification}
+                onTestNotification={testNotification}
+            />
+        </TimerModal>
     {/if}
 
     <TimerControls
@@ -394,4 +396,10 @@
     />
 
     <TimerResetControls onResetTimer={resetTimer} onResetAll={resetAll} />
-</main>
+</section>
+
+<style>
+    .timer-shell {
+        width: 100%;
+    }
+</style>
