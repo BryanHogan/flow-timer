@@ -3,23 +3,25 @@
 </script>
 
 <div class="section flex-center">
-    <button onclick={onResetTimer} aria-label="Reset timer" title="Reset timer">
+    <button onclick={onResetTimer} title="Reset timer">
         <img
             src="/icons/Reset-Timer-Icon.svg"
             alt=""
             aria-hidden="true"
-            width="24"
-            height="24"
+            width="20"
+            height="20"
         />
+        <span>Reset Timer</span>
     </button>
-    <button onclick={onResetAll} aria-label="Reset all tasks" title="Reset all tasks">
+    <button onclick={onResetAll} title="Reset all tasks">
         <img
             src="/icons/Reset-All-Icon.svg"
             alt=""
             aria-hidden="true"
-            width="24"
-            height="24"
+            width="20"
+            height="20"
         />
+        <span>Reset Tasks</span>
     </button>
 </div>
 
@@ -30,6 +32,9 @@
         padding-bottom: var(--space-xl);
     }
     button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2xs);
         background-color: transparent;
         padding: var(--space-xs);
         border: 0;
@@ -39,5 +44,8 @@
             background-color: var(--color-accent-700);
             cursor: pointer;
         }
+    }
+    button img {
+        display: block;
     }
 </style>
