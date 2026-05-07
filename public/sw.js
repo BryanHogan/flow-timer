@@ -1,5 +1,6 @@
-// Bump CACHE_VERSION on each release to invalidate stale assets.
-const CACHE_VERSION = 'flow-timer-v1';
+// CACHE_VERSION and the trailing _astro paths in APP_SHELL are rewritten by
+// the pwa-precache integration in astro.config.mjs after `astro build`.
+const CACHE_VERSION = 'flow-timer-dev';
 
 const APP_SHELL = [
   '/',
@@ -24,7 +25,8 @@ const APP_SHELL = [
   '/sounds/notification-pluck.mp3',
   '/images/Flow-Timer-Preview.png',
   '/images/192-flow-timer.png',
-  '/images/512-flow-timer.png'
+  '/images/512-flow-timer.png',
+  // __BUILD_ASSETS__
 ];
 
 self.addEventListener('install', (event) => {
