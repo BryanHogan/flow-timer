@@ -39,6 +39,13 @@ if (canonicalURL.pathname.endsWith('/')) {
         <meta name="author" content="Bryan Hogan" />
         <meta name="copyright" content="Bryan Hogan" />
         <meta name="theme-color" content="#7FB4DA">
+
+        <!-- PWA -->
+        <link rel="manifest" href="/manifest.webmanifest">
+        <link rel="apple-touch-icon" href="/images/192-flow-timer.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Flow Timer">
     
     <!-- OpenGraph -->
         <meta property="og:title" content={title} />
@@ -68,6 +75,13 @@ if (canonicalURL.pathname.endsWith('/')) {
             <slot />
         </div>
         <Footer />
+        <script is:inline>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+            }
+        </script>
     </body>
 </html>
 
