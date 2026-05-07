@@ -32,6 +32,7 @@
     let playSound = $state("none");
     let confirmNextTask = $state(false);
     let awaitingNextConfirm = $state(false);
+    let showTimeInTitle = $state(true);
 
     let currentItem = $derived(itemList[currentActiveItem] ?? { name: "", length: 0 });
     let activeItemLength = $derived(Number(currentItem.length) || 0);
@@ -52,14 +53,18 @@
     );
 
     let titleClockFace = $derived.by(() => {
+        if (!showTimeInTitle) {
+            return "Flow Timer";
+        }
+
         if (timerBegan) {
-            const taskTitle = statusMessage ? `${statusMessage} - ` : "";
-            const timerState = timerActive ? "" : "Paused - ";
-            return `${timerState}${clockFace} - ${taskTitle}Flow Timer`;
+            const taskTitle = statusMessage ? `${statusMessage} | ` : "";
+            const timerState = timerActive ? "" : "Paused | ";
+            return `${timerState}${clockFace} | ${taskTitle}Flow Timer`;
         }
 
         if (statusMessage === "Complete!") {
-            return "Complete - Flow Timer";
+            return "Complete | Flow Timer";
         }
 
         return "Flow Timer";
@@ -84,7 +89,12 @@
         try {
             localStorage.setItem(
                 OPTIONS_STORAGE_KEY,
-                JSON.stringify({ playSound, playNotification, confirmNextTask }),
+                JSON.stringify({
+                    playSound,
+                    playNotification,
+                    confirmNextTask,
+                    showTimeInTitle,
+                }),
             );
         } catch (error) {
             console.warn("Unable to save Flow Timer options:", error);
@@ -108,6 +118,9 @@
             }
             if (typeof options.confirmNextTask === "boolean") {
                 confirmNextTask = options.confirmNextTask;
+            }
+            if (typeof options.showTimeInTitle === "boolean") {
+                showTimeInTitle = options.showTimeInTitle;
             }
         } catch (error) {
             console.warn("Unable to restore Flow Timer options:", error);
@@ -331,6 +344,10 @@
         confirmNextTask = enabled;
     }
 
+    function updateShowTimeInTitle(enabled) {
+        showTimeInTitle = enabled;
+    }
+
     function updateNotificationPreference(enabled) {
         playNotification = enabled;
         if (enabled) {
@@ -415,9 +432,11 @@
                 {playSound}
                 {playNotification}
                 {confirmNextTask}
+                {showTimeInTitle}
                 onSoundChange={updateSound}
                 onNotificationChange={updateNotificationPreference}
                 onConfirmNextChange={updateConfirmNextTask}
+                onShowTimeInTitleChange={updateShowTimeInTitle}
                 onTestSound={playSoundNotification}
                 onTestNotification={testNotification}
             />

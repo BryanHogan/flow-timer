@@ -3,9 +3,11 @@
         playSound,
         playNotification,
         confirmNextTask,
+        showTimeInTitle,
         onSoundChange,
         onNotificationChange,
         onConfirmNextChange,
+        onShowTimeInTitleChange,
         onTestSound,
         onTestNotification,
     } = $props();
@@ -55,6 +57,17 @@
                     checked={confirmNextTask}
                     onchange={(event) =>
                         onConfirmNextChange(event.currentTarget.checked)}
+                />
+            </label>
+        </li>
+        <li>
+            <label>
+                Show time in title
+                <input
+                    type="checkbox"
+                    checked={showTimeInTitle}
+                    onchange={(event) =>
+                        onShowTimeInTitleChange(event.currentTarget.checked)}
                 />
             </label>
         </li>
