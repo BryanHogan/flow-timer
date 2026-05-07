@@ -12,25 +12,20 @@
     }
 </script>
 
-<button onclick={openSettings} aria-label="Open timer options" title="Open timer options">
-    <img
-        src="/icons/Settings-Icon.svg"
-        alt=""
-        aria-hidden="true"
-        width="24"
-        height="24"
-    />
-</button>
+<button onclick={openSettings} title="Open timer options">Settings</button>
 
 <style>
     button {
         border: none;
         background-color: transparent;
+        color: var(--color-neutral-500);
+        text-decoration: none;
+        transition: var(--transition-normal) color;
+        font-weight: var(--font-weight-semi-bold);
         cursor: pointer;
-        padding: var(--space-2xs);
-        border-radius: var(--border-radius-s);
+        padding-inline: 4px;
         &:hover {
-            background-color: var(--color-accent-700);
+            color: var(--a-hover-color);
         }
     }
 </style>
