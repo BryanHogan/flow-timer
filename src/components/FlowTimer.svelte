@@ -259,7 +259,7 @@
     }
 
     function createNewInputField() {
-        itemList = [...itemList, createBlankItem()];
+        itemList.push(createBlankItem());
     }
 
     function redoCurrent() {
@@ -344,12 +344,14 @@
 
 <svelte:head><title>{titleClockFace}</title></svelte:head>
 
-<section class="base-layout timer-shell" aria-label="Flow Timer controls">
+<section
+    class="base-layout timer-shell"
+    aria-labelledby="flow-timer-page-heading"
+>
     {#if $showHowTo}
         <TimerModal
             title="How to use"
             closeLabel="Close how to use"
-            labelledBy="how-to-modal-title"
             onClose={closeHowToUse}
         >
             <HowToPanel />
@@ -360,7 +362,6 @@
         <TimerModal
             title="Settings"
             closeLabel="Close settings"
-            labelledBy="settings-modal-title"
             onClose={closeSettings}
         >
             <TimerOptions

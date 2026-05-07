@@ -4,10 +4,13 @@
     let {
         title,
         closeLabel = "Close modal",
-        labelledBy = "timer-modal-title",
         onClose,
         children,
     } = $props();
+
+    const titleId = `timer-modal-title-${crypto.randomUUID()}`;
+    const FOCUSABLE_SELECTOR =
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     let panel;
     let previouslyFocusedElement;
@@ -33,14 +36,43 @@
         onClose?.();
     }
 
-    function closeFromKeyboard(event) {
+    function getFocusable() {
+        if (!panel) return [];
+        return Array.from(panel.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+            (el) => !el.hasAttribute("inert") && el.offsetParent !== null,
+        );
+    }
+
+    function handleKeydown(event) {
         if (event.key === "Escape") {
             closeModal();
+            return;
+        }
+
+        if (event.key !== "Tab") return;
+
+        const focusable = getFocusable();
+        if (focusable.length === 0) {
+            event.preventDefault();
+            panel?.focus();
+            return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement;
+
+        if (event.shiftKey && (active === first || active === panel)) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && active === last) {
+            event.preventDefault();
+            first.focus();
         }
     }
 </script>
 
-<svelte:window onkeydown={closeFromKeyboard} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="modal-layer">
     <button
@@ -54,12 +86,12 @@
         class="modal-panel"
         role="dialog"
         aria-modal="true"
-        aria-labelledby={labelledBy}
+        aria-labelledby={titleId}
         tabindex="-1"
         bind:this={panel}
     >
         <div class="modal-header">
-            <h2 id={labelledBy}>{title}</h2>
+            <h2 id={titleId}>{title}</h2>
             <button onclick={closeModal} aria-label={closeLabel} title={closeLabel}>
                 <img
                     src="/icons/Close-Icon.svg"
