@@ -4,6 +4,7 @@
         clockFace,
         timerActive,
         timerBegan,
+        awaitingNextConfirm,
         currentActiveItem,
         itemCount,
         currentTime,
@@ -15,7 +16,13 @@
 
     let progressMax = $derived(Math.max(1, Number(activeItemLength || 0) * 60));
     let playPauseLabel = $derived(
-        timerActive ? "Pause timer" : timerBegan ? "Resume timer" : "Start timer",
+        awaitingNextConfirm
+            ? "Start next task"
+            : timerActive
+              ? "Pause timer"
+              : timerBegan
+                ? "Resume timer"
+                : "Start timer",
     );
 </script>
 
@@ -43,7 +50,7 @@
         </button>
         <button
             onclick={onToggle}
-            class={timerBegan ? "" : "glow"}
+            class={timerBegan && !awaitingNextConfirm ? "" : "glow"}
             aria-label={playPauseLabel}
             title={playPauseLabel}
         >

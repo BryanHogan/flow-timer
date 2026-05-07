@@ -30,6 +30,8 @@
     let timerBegan = $state(false);
     let playNotification = $state(false);
     let playSound = $state("none");
+    let confirmNextTask = $state(false);
+    let awaitingNextConfirm = $state(false);
 
     let currentItem = $derived(itemList[currentActiveItem] ?? { name: "", length: 0 });
     let activeItemLength = $derived(Number(currentItem.length) || 0);
@@ -82,7 +84,7 @@
         try {
             localStorage.setItem(
                 OPTIONS_STORAGE_KEY,
-                JSON.stringify({ playSound, playNotification }),
+                JSON.stringify({ playSound, playNotification, confirmNextTask }),
             );
         } catch (error) {
             console.warn("Unable to save Flow Timer options:", error);
@@ -103,6 +105,9 @@
             }
             if (typeof options.playNotification === "boolean") {
                 playNotification = options.playNotification;
+            }
+            if (typeof options.confirmNextTask === "boolean") {
+                confirmNextTask = options.confirmNextTask;
             }
         } catch (error) {
             console.warn("Unable to restore Flow Timer options:", error);
@@ -149,6 +154,13 @@
             return;
         }
 
+        if (awaitingNextConfirm) {
+            awaitingNextConfirm = false;
+            statusMessage = itemList[currentActiveItem].name;
+            timerActive = true;
+            return;
+        }
+
         timerActive = !timerActive;
     }
 
@@ -186,9 +198,26 @@
                 nextTime >=
                 Number(itemList[currentActiveItem].length) * SECONDS_PER_MINUTE
             ) {
-                goNextItem();
+                onTimerElapsed();
             }
         }, 1000);
+    }
+
+    function onTimerElapsed() {
+        if (!timerBegan) return;
+
+        const isLastItem = currentActiveItem >= itemList.length - 1;
+        if (isLastItem || !confirmNextTask) {
+            goNextItem();
+            return;
+        }
+
+        sendNotification();
+        currentActiveItem = currentActiveItem + 1;
+        currentTime = 0;
+        statusMessage = "Next: " + itemList[currentActiveItem].name;
+        awaitingNextConfirm = true;
+        timerActive = false;
     }
 
     function finishTimer() {
@@ -201,7 +230,11 @@
     function goNextItem() {
         if (!timerBegan) return;
 
-        sendNotification();
+        if (awaitingNextConfirm) {
+            awaitingNextConfirm = false;
+        } else {
+            sendNotification();
+        }
 
         if (currentActiveItem < itemList.length - 1) {
             currentActiveItem = currentActiveItem + 1;
@@ -220,6 +253,7 @@
         currentTime = 0;
         currentActiveItem = 0;
         timerActive = false;
+        awaitingNextConfirm = false;
         statusMessage = "Ready?";
     }
 
@@ -265,6 +299,15 @@
     function redoCurrent() {
         if (!timerBegan) return;
 
+        if (awaitingNextConfirm) {
+            awaitingNextConfirm = false;
+            currentActiveItem = Math.max(0, currentActiveItem - 1);
+            statusMessage = itemList[currentActiveItem].name;
+            currentTime = 0;
+            timerActive = false;
+            return;
+        }
+
         if (currentTime === 0 && currentActiveItem > 0) {
             currentActiveItem = currentActiveItem - 1;
             statusMessage = itemList[currentActiveItem].name;
@@ -282,6 +325,10 @@
 
     function updateSound(sound) {
         playSound = sound;
+    }
+
+    function updateConfirmNextTask(enabled) {
+        confirmNextTask = enabled;
     }
 
     function updateNotificationPreference(enabled) {
@@ -367,8 +414,10 @@
             <TimerOptions
                 {playSound}
                 {playNotification}
+                {confirmNextTask}
                 onSoundChange={updateSound}
                 onNotificationChange={updateNotificationPreference}
+                onConfirmNextChange={updateConfirmNextTask}
                 onTestSound={playSoundNotification}
                 onTestNotification={testNotification}
             />
@@ -380,6 +429,7 @@
         {clockFace}
         {timerActive}
         {timerBegan}
+        {awaitingNextConfirm}
         {currentActiveItem}
         itemCount={itemList.length}
         {currentTime}

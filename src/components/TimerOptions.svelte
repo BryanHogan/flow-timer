@@ -2,8 +2,10 @@
     let {
         playSound,
         playNotification,
+        confirmNextTask,
         onSoundChange,
         onNotificationChange,
+        onConfirmNextChange,
         onTestSound,
         onTestNotification,
     } = $props();
@@ -44,6 +46,17 @@
             >
                 <small>Test notification</small>
             </button>
+        </li>
+        <li>
+            <label>
+                Confirm before next task
+                <input
+                    type="checkbox"
+                    checked={confirmNextTask}
+                    onchange={(event) =>
+                        onConfirmNextChange(event.currentTarget.checked)}
+                />
+            </label>
         </li>
     </ul>
 </div>
