@@ -1,5 +1,5 @@
 <script>
-    import { onDestroy, onMount, tick } from "svelte";
+    import { onMount, tick } from "svelte";
 
     let {
         title,
@@ -19,17 +19,23 @@
         previouslyFocusedElement = document.activeElement;
         document.body.classList.add("modal-open");
 
+        let mounted = true;
         tick().then(() => {
-            panel?.focus();
+            if (mounted) panel?.focus();
         });
-    });
 
-    onDestroy(() => {
-        document.body.classList.remove("modal-open");
+        return () => {
+            mounted = false;
+            document.body.classList.remove("modal-open");
+            if (!(previouslyFocusedElement instanceof HTMLElement) || !previouslyFocusedElement.isConnected) return;
 
-        if (previouslyFocusedElement instanceof HTMLElement) {
-            previouslyFocusedElement.focus();
-        }
+            // The viewport may have crossed the mobile breakpoint while open.
+            const returnTarget = previouslyFocusedElement.getClientRects().length
+                ? previouslyFocusedElement
+                : Array.from(document.querySelectorAll(".menu-toggle-button, .nav-control"))
+                    .find(element => element instanceof HTMLElement && element.getClientRects().length);
+            returnTarget?.focus();
+        };
     });
 
     function closeModal() {
@@ -137,7 +143,8 @@
         position: relative;
         z-index: 1;
         width: min(100%, 32rem);
-        max-height: min(42rem, calc(100svh - var(--space-l)));
+        min-width: 0;
+        max-height: min(42rem, calc(100svh - 2 * var(--space-m)));
         overflow: auto;
         outline: none;
         border: 1px solid var(--color-neutral-700);
@@ -147,6 +154,10 @@
     }
 
     .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: var(--color-neutral-800);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -159,7 +170,7 @@
         margin: 0;
         color: var(--color-neutral-200);
         font-size: var(--text-size-xl);
-        font-weight: var(--font-weight-normal);
+        font-weight: var(--font-weight-regular);
     }
 
     .modal-content {
@@ -167,6 +178,7 @@
     }
 
     .modal-header button {
+        flex-shrink: 0;
         border: 0;
         border-radius: var(--border-radius-s);
         padding: var(--space-xs);
@@ -188,7 +200,7 @@
         }
 
         .modal-panel {
-            max-height: calc(100svh - var(--space-m));
+            max-height: calc(100svh - 2 * var(--space-s));
         }
     }
 </style>

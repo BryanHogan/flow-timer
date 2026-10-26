@@ -94,7 +94,7 @@
             Click play to start timer.
         {/if}
     </p>
-    <progress max={progressMax} value={Math.min(currentTime, progressMax)}>
+    <progress aria-label="Task progress" max={progressMax} value={Math.min(currentTime, progressMax)}>
         {currentTime} / {progressMax}
     </progress>
 </section>
@@ -110,12 +110,12 @@
         max-width: 80%;
         width: 100%;
         margin-inline: auto;
-        transition: all 1.2s ease;
+        min-width: 0;
     }
     h2 {
         margin-top: var(--space-m);
         font-size: var(--text-size-3xl);
-        font-weight: var(--font-weight-normal);
+        font-weight: var(--font-weight-regular);
     }
     .current-time {
         padding-bottom: var(--space-m);

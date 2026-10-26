@@ -12,7 +12,7 @@
   }
 </script>
 
-<button onclick={openHowTo} title="How to use Flow Timer">
+<button class="nav-control" type="button" onclick={openHowTo} title="How to use Flow Timer">
   <svg
     class="nav-icon"
     xmlns="http://www.w3.org/2000/svg"
@@ -32,25 +32,3 @@
   </svg>
   <span>How To Use</span>
 </button>
-
-<style>
-  button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    border: none;
-    background-color: transparent;
-    color: var(--color-neutral-500);
-    text-decoration: none;
-    transition: var(--transition-normal) color;
-    font-weight: var(--font-weight-semi-bold);
-    cursor: pointer;
-    padding-inline: 4px;
-    &:hover {
-      color: var(--a-hover-color);
-    }
-  }
-  .nav-icon {
-    display: block;
-  }
-</style>

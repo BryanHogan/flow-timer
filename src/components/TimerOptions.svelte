@@ -116,7 +116,7 @@
 
     .settings-row {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--space-m);
         padding-block: var(--space-s);
@@ -128,6 +128,7 @@
     }
 
     .settings-row label {
+        overflow-wrap: anywhere;
         color: var(--color-neutral-200);
         font-size: var(--font-size-base);
     }
@@ -155,7 +156,6 @@
     .select:hover,
     .select:focus-visible {
         border-color: var(--color-accent-500);
-        outline: none;
     }
 
     .switch {
@@ -222,12 +222,21 @@
     .test-button:focus-visible {
         color: var(--color-neutral-100);
         border-color: var(--color-accent-500);
-        outline: none;
     }
 
     @media only screen and (max-width: 35rem) {
         .settings-row {
             gap: var(--space-s);
+        }
+    }
+
+    @media only screen and (max-width: 24rem) {
+        .settings-row {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .control-cluster {
+            justify-self: start;
+            justify-content: flex-start;
         }
     }
 </style>

@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 import Icon from "./Icon.astro";
 import SettingsToggle from "../components/SettingsToggle.svelte";
-import HowToToggle from "../components/HowToToggle.svelte"
+import HowToToggle from "../components/HowToToggle.svelte";
 ---
 
 <div class="backdrop-area">
@@ -11,7 +11,7 @@ import HowToToggle from "../components/HowToToggle.svelte"
             <a href="/" class="logo-a"
                 ><Image
                     src="/icons/Flow-Timer-Logo.svg"
-                    alt="Logo icon"
+                    alt="Flow Timer home"
                     height="25"
                     width="25"
                     class="logo"
@@ -20,28 +20,28 @@ import HowToToggle from "../components/HowToToggle.svelte"
             <button
                 aria-controls="primary-navigation"
                 aria-expanded="false"
+                aria-label="Open menu"
+                type="button"
                 class="menu-toggle-button"
             >
                 <Icon
                     name="bars"
                     size="1.5rem"
-                    label="Bars"
                     class="hamburger-icon"
                     color="var(--color-neutral-300)"
                 />
                 <Icon
                     name="close"
                     size="1.5rem"
-                    label="Close"
                     class="close-icon"
                     color="var(--color-neutral-300)"
                 />
             </button>
-            <nav class="primary-navigation" id="primary-navigation">
+            <nav class="primary-navigation" id="primary-navigation" aria-label="Main">
                 <ul role="list">
                     <li><SettingsToggle client:load /></li>
                     <li><HowToToggle client:load /></li>
-                    <li><a href="/about">About</a></li>
+                    <li><a class="nav-control" href="/about">About</a></li>
                 </ul>
             </nav>
         </header>
@@ -63,7 +63,7 @@ import HowToToggle from "../components/HowToToggle.svelte"
         width: 100%;
         position: fixed;
         z-index: 10;
-        
+
     }
     .header-container::before {
         content: "";
@@ -73,6 +73,7 @@ import HowToToggle from "../components/HowToToggle.svelte"
         right: 0;
         bottom: 0;
         z-index: -1;
+        background-color: var(--color-neutral-900);
     }
 
     header {
@@ -90,18 +91,38 @@ import HowToToggle from "../components/HowToToggle.svelte"
         display: flex;
         align-items: center;
         gap: 1rem;
-        & li a {
-            padding: var(--space-s);
-            padding-inline: 4px;
-            color: var(--color-neutral-500);
-            text-decoration: none;
-            transition: var(--transition-normal) color;
-            font-weight: var(--font-weight-semi-bold);
-            &:hover,
-            &:focus-within {
-                color: var(--a-hover-color);
-            }
-        }
+    }
+    .primary-navigation li {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+    }
+    /* Explicitly cross the Astro/Svelte island style boundary. */
+    .primary-navigation :global(.nav-control) {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2xs);
+        min-height: 2.5rem;
+        padding: var(--space-xs) 0.25rem;
+        border: 0;
+        background: transparent;
+        color: var(--color-neutral-500);
+        font: inherit;
+        font-weight: var(--font-weight-semi-bold);
+        line-height: var(--font-line-height);
+        text-decoration: none;
+        cursor: pointer;
+        transition: color var(--transition-normal);
+    }
+    .primary-navigation :global(.nav-control:hover),
+    .primary-navigation :global(.nav-control:focus-visible) {
+        color: var(--a-hover-color);
+    }
+    .primary-navigation :global(.nav-icon) {
+        flex-shrink: 0;
+    }
+    :global(body.menu-open) {
+        overflow: hidden;
     }
     .menu-toggle-button {
         display: none;
@@ -117,21 +138,22 @@ import HowToToggle from "../components/HowToToggle.svelte"
             z-index: 30;
             right: 1rem;
             background-color: transparent;
-            padding: 0.5rem 0 0.5rem 0.5rem;
+            padding: var(--space-xs);
             border: 0;
             cursor: pointer;
-            .close-icon {
-                display: none;
-            }
         }
-        [aria-expanded="true"] {
-            .close-icon {
-                display: block;
-                /* Visibility: visible? */
-            }
-            .hamburger-icon {
-                display: none;
-            }
+        /* Keep :global selectors flat so Astro processes the icon boundary. */
+        .menu-toggle-button :global(.hamburger-icon) {
+            display: block;
+        }
+        .menu-toggle-button :global(.close-icon) {
+            display: none;
+        }
+        .menu-toggle-button[aria-expanded="true"] :global(.close-icon) {
+            display: block;
+        }
+        .menu-toggle-button[aria-expanded="true"] :global(.hamburger-icon) {
+            display: none;
         }
         [aria-expanded="true"] ~ nav {
             display: block;
@@ -140,54 +162,102 @@ import HowToToggle from "../components/HowToToggle.svelte"
             right: 0;
             bottom: 0;
             width: 80%;
+            overflow-y: auto;
+            padding: var(--navbar-height) var(--space-m) var(--space-l);
             margin-left: auto;
             box-shadow: 0 0 0 100vmax hsl(0 0 0 / 0.7);
             background-color: var(--color-neutral-900);
             z-index: 20;
             ul {
-                margin-top: 20vh;
+                margin-top: min(12vh, var(--space-3xl));
                 display: grid;
                 gap: 2rem;
-                margin-left: max(3rem, 20vw);
+                margin-left: 0;
             }
         }
     }
 </style>
 
 <script>
+    let cleanupNavigation: (() => void) | undefined;
+
     function setupNavigation() {
-        const navigationToggle = document.querySelector(
-            '[aria-controls="primary-navigation"]',
-        ) as HTMLButtonElement | null;
-        const navigation = document.querySelector(
-            ".primary-navigation",
-        ) as HTMLElement | null;
+        cleanupNavigation?.();
+        const toggle = document.querySelector<HTMLButtonElement>(".menu-toggle-button");
+        const navigation = document.querySelector<HTMLElement>("#primary-navigation");
+        const backdrop = document.querySelector<HTMLElement>(".backdrop-area");
+        if (!toggle || !navigation || !backdrop) return;
 
-        if (!navigationToggle || !navigation) return;
+        const controller = new AbortController();
+        const { signal } = controller;
+        const mobile = window.matchMedia("(max-width: 27.999rem)");
+        let open = false;
+        let inertElements: { element: HTMLElement; inert: boolean }[] = [];
+        const links = () => Array.from(navigation.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"));
 
-        const closeMenu = (event: Event) => {
-            if (navigation.contains(event.target as Node)) return;
-            navigationToggle.setAttribute("aria-expanded", "false");
-        };
+        function closeMenu(restoreFocus = true) {
+            if (!open) return;
+            open = false;
+            toggle!.setAttribute("aria-expanded", "false");
+            toggle!.setAttribute("aria-label", "Open menu");
+            document.body.classList.remove("menu-open");
+            for (const { element, inert } of inertElements) element.inert = inert;
+            inertElements = [];
+            if (restoreFocus) toggle!.focus();
+        }
 
-        const toggleMenu = (event: Event) => {
-            event.stopPropagation();
-            const navigationOpened =
-                navigationToggle.getAttribute("aria-expanded");
-            navigationToggle.setAttribute(
-                "aria-expanded",
-                navigationOpened === "false" ? "true" : "false",
+        toggle.addEventListener("click", () => {
+            if (open) return closeMenu();
+            if (!mobile.matches) return;
+            open = true;
+            toggle.setAttribute("aria-expanded", "true");
+            toggle.setAttribute("aria-label", "Close menu");
+            document.body.classList.add("menu-open");
+            const background = Array.from(document.body.children).filter(
+                (element): element is HTMLElement => element instanceof HTMLElement && element !== backdrop && !["SCRIPT", "STYLE"].includes(element.tagName),
             );
+            const logo = backdrop.querySelector<HTMLElement>(".logo-a");
+            if (logo) background.push(logo);
+            inertElements = background.map(element => ({ element, inert: element.inert }));
+            for (const { element } of inertElements) element.inert = true;
+            links()[0]?.focus();
+        }, { signal });
+
+        // Capture runs before a Svelte button opens its dialog, so the dialog
+        // remembers the visible menu toggle as its focus-return target.
+        navigation.addEventListener("click", event => {
+            if (event.target instanceof Element && event.target.closest("a, button")) closeMenu();
+        }, { capture: true, signal });
+        document.addEventListener("click", event => {
+            if (event.target instanceof Node && !navigation.contains(event.target) && !toggle.contains(event.target)) closeMenu();
+        }, { signal });
+        document.addEventListener("keydown", event => {
+            if (!open) return;
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeMenu();
+            } else if (event.key === "Tab") {
+                const controls = [toggle, ...links()];
+                const index = controls.indexOf(document.activeElement as HTMLElement);
+                event.preventDefault();
+                controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+            }
+        }, { signal });
+        mobile.addEventListener("change", () => {
+            if (!mobile.matches) {
+                const toggleHadFocus = document.activeElement === toggle;
+                closeMenu(false);
+                if (toggleHadFocus) links()[0]?.focus();
+            }
+        }, { signal });
+
+        cleanupNavigation = () => {
+            closeMenu(false);
+            controller.abort();
         };
-
-        navigationToggle.removeEventListener("click", toggleMenu);
-        document.removeEventListener("click", closeMenu);
-
-        navigationToggle.addEventListener("click", toggleMenu);
-        document.addEventListener("click", closeMenu);
     }
 
     setupNavigation();
-
-    document.addEventListener("astro:after-swap", setupNavigation);
+    document.addEventListener("astro:before-swap", () => cleanupNavigation?.());
+    document.addEventListener("astro:page-load", setupNavigation);
 </script>

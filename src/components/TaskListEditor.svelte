@@ -10,7 +10,7 @@
             <p class="length">Length (min)</p>
         </div>
         <ul role="list">
-            {#each itemList as item, index}
+            {#each itemList as item, index (index)}
                 <li class="item-input-row" role="listitem">
                     <input
                         type="text"
@@ -50,11 +50,12 @@
     }
     .simpler-h2 {
         font-size: var(--text-size-xl);
-        font-weight: var(--font-weight-normal);
+        font-weight: var(--font-weight-regular);
         color: var(--color-neutral-300);
     }
     .input-container {
-        max-width: 1250px;
+        width: 100%;
+        max-width: calc(28rem + var(--space-xs));
         margin-inline: auto;
     }
     ul {
@@ -63,14 +64,16 @@
         justify-content: center;
         gap: var(--space-m);
     }
-    .item-input-row {
-        display: flex;
-        width: 100%;
-        flex-direction: row;
-        justify-content: center;
+    .item-input-row,
+    .input-description {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 6rem;
         gap: var(--space-xs);
+        width: 100%;
     }
     input {
+        min-width: 0;
+        width: 100%;
         background-color: var(--color-accent-800);
         border: 1px solid transparent;
         padding: 0.25rem;
@@ -79,26 +82,7 @@
             background-color: var(--color-accent-700);
         }
     }
-    .name-input {
-        width: 60%;
-        max-width: 22rem;
-    }
-    .length-input {
-        width: 20%;
-        max-width: 6rem;
-    }
     .input-description {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
         padding-bottom: var(--space-s);
-    }
-    .name {
-        width: 60%;
-        max-width: calc(22rem + var(--space-s));
-    }
-    .length {
-        width: 20%;
-        max-width: 6rem;
     }
 </style>

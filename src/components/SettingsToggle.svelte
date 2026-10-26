@@ -12,7 +12,7 @@
     }
 </script>
 
-<button onclick={openSettings} title="Open timer options">
+<button class="nav-control" type="button" onclick={openSettings} title="Open timer options">
     <svg
         class="nav-icon"
         width="18"
@@ -30,24 +30,3 @@
     </svg>
     <span>Settings</span>
 </button>
-
-<style>
-    button {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2xs);
-        border: none;
-        background-color: transparent;
-        color: var(--color-neutral-500);
-        font-weight: var(--font-weight-semi-bold);
-        cursor: pointer;
-        padding-inline: 4px;
-        transition: var(--transition-normal) color;
-        &:hover {
-            color: var(--a-hover-color);
-        }
-    }
-    .nav-icon {
-        display: block;
-    }
-</style>
